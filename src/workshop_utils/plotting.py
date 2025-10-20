@@ -710,9 +710,9 @@ def plot_current_history_features(
     axes[1, 0].plot(features[:, 0])
     axes[1, 0].set_ylabel("Current")
     axes[0, 0].set_title("Feature 1")
-    axes[1, 1].plot(features[:, -1], f"C{basis.shape[1]-1}")
+    axes[1, 1].plot(features[:, -1], f"C{basis.shape[1] - 1}")
     axes[0, 1].plot(time, basis, alpha=0.1)
-    axes[0, 1].plot(time, basis[:, -1], f"C{basis.shape[1]-1}", alpha=1)
+    axes[0, 1].plot(time, basis[:, -1], f"C{basis.shape[1] - 1}", alpha=1)
     axes[0, 1].set_title(f"Feature {basis.shape[1]}")
     axes[0, 2].plot(time, basis)
     axes[1, 2].plot(features)
@@ -827,3 +827,20 @@ def current_injection_plot(
         bbox_to_anchor=(0.5, -0.4),
         bbox_transform=zoom_axes[1].transAxes,
     )
+
+
+def plot_basis_filter(basis, model, current_history_duration_sec=0.2):
+    """Visualize the model's learned filter."""
+    fig, axes = plt.subplots(1, 4, figsize=(20, 5))
+    time, kernel = basis.evaluate_on_grid(200)
+    time *= current_history_duration_sec
+    axes[0].plot(time, kernel)
+    axes[0].set(title="Basis functions", xlabel="Time (sec)", ylabel="Amplitude (A.U.)")
+    axes[1].bar(np.arange(len(model.coef_)), model.coef_)
+    axes[1].set(title="Coefficient Weights", xlabel="Basis number")
+    axes[2].plot(time, kernel * model.coef_)
+    axes[2].set(title="Weighted basis functions", xlabel="Time (sec)")
+    axes[2].axhline(0, c="k", linestyle="--")
+    axes[3].plot(time, np.matmul(kernel, model.coef_))
+    axes[3].axhline(0, c="k", linestyle="--")
+    axes[3].set(title="Learned linear filter", xlabel="Time (sec)")
