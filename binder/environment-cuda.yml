@@ -1,0 +1,10 @@
+name: sfn2025
+channels:
+  - conda-forge
+  - nvidia
+dependencies:
+  - ffmpeg
+  - jax
+  - jaxlib=*=*cuda*
+  - pip:
+      - git+https://github.com/flatironinstitute/ccn-software-sfn-2025.git
