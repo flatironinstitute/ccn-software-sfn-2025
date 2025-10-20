@@ -7,13 +7,19 @@ We have a slack channel for communicating with attendees, if you haven't receive
 > [!NOTE]
 > The rest of this README is for contributors to the workshop.
 
+## Questions
+
+- [ ] when / where is installation help session
+- [ ] python version?
+- [ ] do we want to tell people to use conda or just say "use uv if you're unsure"
+
 ## Building the site locally
 
 > [!WARNING]
 > For some reason, we need `jupyterlab < 4.3` in order to get the link highlighting working. There's a class, `.jp-ThemedContainer`, which removes the link styling. Possibly related to [this PR](https://github.com/jupyterlab/jupyterlab/pull/16519) or [this issue](https://github.com/jupyterlab/jupyterlab/issues/13493).
 
 
-To build the site locally, clone this repo and install it in a fresh python 3.11 environment (`pip install -e .`). Then run `make -C docs html O="-T"` and open `docs/build/html/index.html` in your browser.
+To build the site locally, clone this repo and install it in a fresh python 3.12 environment (`pip install -e .`). Then run `make -C docs html O="-T"` and open `docs/build/html/index.html` in your browser.
 
 ## strip_text.py
 
