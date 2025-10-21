@@ -165,7 +165,7 @@ By plotting the neuronal firing rate as a function of position, we can see that 
 ```{code-cell} ipython3
 :tags: [render-all]
 
-place_fields = nap.compute_1d_tuning_curves(spikes, position, 50, position.time_support)
+place_fields = nap.compute_tuning_curves(spikes, position, bins=50, epochs=position.time_support, feature_names=["distance"])
 workshop_utils.plot_place_fields(place_fields)
 ```
 
@@ -183,7 +183,7 @@ To decrease computation time, we're going to spend the rest of the notebook focu
 :tags: [render-all]
 
 neurons = [82, 92, 220]
-place_fields = place_fields[neurons]
+place_fields = place_fields.sel({"unit": neurons})
 spikes = spikes[neurons]
 bin_size = .01
 count = spikes.count(bin_size, ep=position.time_support)
@@ -222,16 +222,16 @@ speed = nap.Tsd(t=position.t, d=np.hstack(speed), time_support=position.time_sup
 print(speed.shape)
 ```
 
-Now that we have the speed of the animal, we can compute the tuning curves for speed modulation. Here we call pynapple [`compute_1d_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_1d_tuning_curves):
+Now that we have the speed of the animal, we can compute the tuning curves for speed modulation. Here we call pynapple [`compute_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_tuning_curves):
 
 <div class="render-user render-presenter">
 
-- Compute the tuning curve with pynapple's [`compute_1d_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_1d_tuning_curves)
+- Compute the tuning curve with pynapple's [`compute_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_tuning_curves)
 
 </div>
 
 ```{code-cell} ipython3
-tc_speed = nap.compute_1d_tuning_curves(spikes, speed, 20, speed.time_support)
+tc_speed = nap.compute_tuning_curves(spikes, speed, bins=20, epochs=speed.time_support, feature_names=["speed"])
 ```
 
 <div class="render-user">
@@ -385,8 +385,8 @@ predicted_rate = glm.predict(X) / bin_size
 print(predicted_rate.shape, count.shape)
 
 # compute the position and speed tuning curves using the predicted firing rate.
-glm_pos = nap.compute_1d_tuning_curves_continuous(predicted_rate, position, 50, position.time_support)
-glm_speed = nap.compute_1d_tuning_curves_continuous(predicted_rate, speed, 30, speed.time_support)
+glm_pos = nap.compute_tuning_curves(predicted_rate, position, bins=50, epochs=position.time_support, feature_names=["position"])
+glm_speed = nap.compute_tuning_curves(predicted_rate, speed, bins=30, epochs=speed.time_support, feature_names=["speed"])
 ```
 
 <div class="render-user render-presenter">
@@ -416,8 +416,8 @@ def visualize_model_predictions(glm, X):
     predicted_rate = glm.predict(X) / bin_size
 
     # compute the position and speed tuning curves using the predicted firing rate.
-    glm_pos = nap.compute_1d_tuning_curves_continuous(predicted_rate, position, 50, position.time_support)
-    glm_speed = nap.compute_1d_tuning_curves_continuous(predicted_rate, speed, 30, position.time_support)
+    glm_pos = nap.compute_tuning_curves(predicted_rate, position, bins=50, epochs=position.time_support, feature_names=["position"])
+    glm_speed = nap.compute_tuning_curves(predicted_rate, speed, bins=30, epochs=position.time_support, feature_names=["speed"])
 
     workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_pos, glm_speed);
 ```

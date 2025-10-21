@@ -474,24 +474,26 @@ firing rate within those bins:
 :::{admonition} Tuning curve in `pynapple`
 :class: note 
 
-[`compute_1d_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_1d_tuning_curves) : compute the firing rate as a function of a 1-dimensional feature.
+[`compute_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_tuning_curves) : compute the firing rate as a function of some feature(s).
 :::
 
 <div class="render-user render-presenter">"
 What is the relationship between the current and the spiking activity?
-[`compute_1d_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_1d_tuning_curves) : compute the firing rate as a function of a 1-dimensional feature.
+[`compute_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_tuning_curves) : compute the firing rate as a function of some feature(s).
 </div>
 
 ```{code-cell} ipython3
 :tags: [render-all]
 
-tuning_curve = nap.compute_1d_tuning_curves(spikes, current, nb_bins=15)
+tuning_curve = nap.compute_tuning_curves(spikes, current, bins=15, feature_names=["current"])
 tuning_curve
 ```
 
-`tuning_curve` is a pandas DataFrame where each column is a neuron (one
+`tuning_curve` is an [xarray DataArray](https://docs.xarray.dev/en/stable/user-guide/data-structures.html#dataarray), a labeled multi-dimensional array. Each column is a neuron (one
 neuron in this case) and each row is a bin over the feature (here, the input
-current). We can easily plot the tuning curve of the neuron:
+current). 
+
+We can easily plot the tuning curve of the neuron:
 
 <div class="render-user render-presenter">"
 Let's plot the tuning curve of the neuron.
@@ -790,9 +792,9 @@ beginning of this notebook. Pynapple can help us again with this:
 ```{code-cell} ipython3
 # pynapple expects the input to this function to be 2d,
 # so let's add a singleton dimension
-tuning_curve_model = nap.compute_1d_tuning_curves_continuous(predicted_fr[:, np.newaxis], current, 15)
+tuning_curve_model = nap.compute_tuning_curves(predicted_fr[:, np.newaxis], current, bins=15, feature_names=["current"])
 fig = doc_plots.tuning_curve_plot(tuning_curve)
-fig.axes[0].plot(tuning_curve_model, color="tomato", label="glm")
+tuning_curve_model.plot(color="tomato", label="glm")
 fig.axes[0].legend()
 ```
 
@@ -1082,10 +1084,10 @@ And our tuning curves:
 :tags: [render-all]
 
 # Visualize tuning curve
-tuning_curve_history_model = nap.compute_1d_tuning_curves_continuous(smooth_history_pred_fr, current, 15)
+tuning_curve_history_model = nap.compute_tuning_curves(smooth_history_pred_fr, current, bins=15, feature_names=["current"])
 fig = doc_plots.tuning_curve_plot(tuning_curve)
-fig.axes[0].plot(tuning_curve_history_model, color="tomato", label="glm (current history)")
-fig.axes[0].plot(tuning_curve_model, color="tomato", linestyle='--', label="glm (instantaneous current)")
+tuning_curve_history_model.plot(color="tomato", label="glm (current history)")
+tuning_curve_model.plot(color="tomato", linestyle='--', label="glm (instantaneous current)")
 fig.axes[0].legend()
 ```
 
