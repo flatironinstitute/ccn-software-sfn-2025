@@ -16,7 +16,7 @@ We have a slack channel for communicating with attendees, if you haven't receive
 ## Building the site locally
 
 > [!WARNING]
-> For some reason, we need `jupyterlab < 4.3` in order to get the link highlighting working. There's a class, `.jp-ThemedContainer`, which removes the link styling. Possibly related to [this PR](https://github.com/jupyterlab/jupyterlab/pull/16519) or [this issue](https://github.com/jupyterlab/jupyterlab/issues/13493).
+> We still need `jupyterlab < 4.3` in order to get the link highlighting working. There's a class, `.jp-ThemedContainer`, which removes the link styling. I posted [a question about this issue](https://discourse.jupyter.org/t/link-highlighting-not-working/38053/3), and it turns out it's [an issue with jupyterlab_myst](https://github.com/jupyter-book/jupyterlab-myst/issues/248), which they're still working on.
 
 
 To build the site locally, clone this repo and install it in a fresh python 3.12 environment (`pip install -e .`). Then run `make -C docs html O="-T"` and open `docs/build/html/index.html` in your browser.

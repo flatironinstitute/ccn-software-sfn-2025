@@ -40,7 +40,7 @@ dependencies = [
     'jupytext',
     'jupyterlab_myst',
     'jupyter',
-    "jupyterlab",
+    "jupyterlab<4.3",
     'pillow',
     'nemos',
     'pynapple',
