@@ -482,12 +482,12 @@ print(tsdframe.loc[[0,1]])
 
 <div class="render-all">
 
-**Question:** What happen when you do `tsdframe[tsdframe.alpha==2]`
+**Question:** What happen when you do `tsdframe[:,tsdframe.alpha==2]`
 
 </div>
 
 ```{code-cell} ipython3
-print(tsdframe[tsdframe.alpha==2])
+print(tsdframe[:,tsdframe.alpha==2])
 ```
 
 ## Core functions of pynapple 
