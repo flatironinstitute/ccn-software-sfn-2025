@@ -10,8 +10,6 @@ We have a slack channel for communicating with attendees, if you haven't receive
 ## Questions
 
 - [ ] when / where is installation help session
-- [ ] python version?
-- [ ] do we want to tell people to use conda or just say "use uv if you're unsure"
 
 ## Building the site locally
 
