@@ -626,7 +626,7 @@ def plot_position_speed_tuning(
         ax = fig.add_subplot(gs[0, 2 * i], sharey=pos_ax, sharex=pos_ax)
         ax.plot(position_tuning[n], "--")
         if model_position_tuning is not None:
-            ax.plot(model_position_tuning[i])
+            ax.plot(model_position_tuning[n])
         ax.set(
             xlabel="Position (cm)", ylabel="Firing rate (Hz)", title="Position tuning"
         )
@@ -637,7 +637,7 @@ def plot_position_speed_tuning(
         ax = fig.add_subplot(gs[0, 2 * i + 1], sharex=speed_ax, sharey=pos_ax)
         ax.plot(speed_tuning[n], "--")
         if model_speed_tuning is not None:
-            ax.plot(model_speed_tuning[i])
+            ax.plot(model_speed_tuning[n])
         ax.set(ylabel="Firing rate (Hz)", xlabel="Speed (cm/s)", title="Speed tuning")
         if speed_ax is None:
             speed_ax = ax

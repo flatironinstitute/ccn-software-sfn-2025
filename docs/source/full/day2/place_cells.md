@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.6
+    jupytext_version: 1.18.1
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -236,11 +236,7 @@ tc_speed = nap.compute_1d_tuning_curves(spikes, speed, 20, speed.time_support)
 
 <div class="render-user">
 
-```{code-cell} ipython3
-:tags: [remove-cell, skip-execution]
-# compute tuning curve here
-tc_speed = 
-```
++++
 
 </div>
 
@@ -360,17 +356,6 @@ As we've done before, we can now use the Poisson GLM from NeMoS to learn the com
 <div class="render-user">
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
-# initialize 
-glm =
-
-# and fit
-```
-
-</div>
-
-```{code-cell} ipython3
 glm = nmo.glm.PopulationGLM(
     solver_kwargs={"tol": 1e-12},
     solver_name="LBFGS",
@@ -391,22 +376,6 @@ Let's check first if our model can accurately predict the tuning curves we displ
 </div>
 
 <div class="render-user">
-
-```{code-cell} ipython3
-:tags: [skip-execution]
-
-# predict the model's firing rate
-predicted_rate = 
-
-# same shape as the counts we were trying to predict
-print(predicted_rate.shape, count.shape)
-
-# compute the position and speed tuning curves using the predicted firing rate.
-glm_pos = 
-glm_speed = 
-```
-
-</div>
 
 ```{code-cell} ipython3
 # predict the model's firing rate
@@ -790,6 +759,7 @@ We then visualize the predictions of `best_estim` the same as before.
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 visualize_model_predictions(best_estim, transformer_input)
 ```
 
@@ -957,6 +927,7 @@ Let's visualize the predictions of the best estimator.
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 visualize_model_predictions(cv.best_estimator_, transformer_input)
 ```
 

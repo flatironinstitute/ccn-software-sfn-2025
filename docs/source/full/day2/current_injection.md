@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.6
+    jupytext_version: 1.18.1
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -739,7 +739,7 @@ fig = doc_plots.current_injection_plot(current, spikes, firing_rate,
                                  # plot the predicted firing rate that has
                                  # been smoothed the same way as the
                                  # smoothed spike train
-                                 predicted_firing_rate=smooth_predicted_fr)
+                                 predicted_firing_rates=smooth_predicted_fr)
 ```
 
 What do we see above? Note that the y-axes in the final row are different for
