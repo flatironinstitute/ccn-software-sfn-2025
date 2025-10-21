@@ -4,6 +4,7 @@ import pynapple as nap
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray
 from typing import Union, Optional, List
 from numpy.typing import NDArray
 from matplotlib.animation import FuncAnimation
@@ -541,8 +542,8 @@ def _analyze_speed(speed: pd.DataFrame, position: nap.Tsd):
 def plot_position_speed(
     position: nap.Tsd,
     speed: nap.Tsd,
-    position_tuning: pd.DataFrame,
-    speed_tuning: pd.DataFrame,
+    position_tuning: xarray.DataArray,
+    speed_tuning: xarray.DataArray,
     neuron_id: Union[int, List[int]],
 ):
     if not hasattr(neuron_id, "__iter__"):
@@ -550,12 +551,12 @@ def plot_position_speed(
     fig = plt.figure(figsize=(6 * len(neuron_id), 7))
     gs = plt.GridSpec(2, 2 * len(neuron_id), wspace=0.3, hspace=0.35)
     pos_range = (
-        np.min([position.min(), position_tuning.index.min()]),
-        np.max([position.max(), position_tuning.index.max()]),
+        np.min([position.min(), position_tuning.distance.min()]),
+        np.max([position.max(), position_tuning.distance.max()]),
     )
     speed_range = (
-        np.min([speed.min(), speed_tuning.index.min()]),
-        np.max([speed.max(), speed_tuning.index.max()]),
+        np.min([speed.min(), speed_tuning.speed.min()]),
+        np.max([speed.max(), speed_tuning.speed.max()]),
     )
     fr_range = (
         np.min([position_tuning.min(), speed_tuning.min()]),
@@ -581,9 +582,9 @@ def plot_position_speed(
     for i, n in enumerate(neuron_id):
         ax = fig.add_subplot(gs[1, 2 * i])
         ax.fill_between(
-            position_tuning[n].index.values,
-            np.zeros(len(position_tuning)),
-            position_tuning[n].values,
+            position_tuning.sel({"unit": n}).distance.data,
+            np.zeros(len(position_tuning.distance)),
+            position_tuning.sel({"unit": n}).data,
         )
         ax.set(
             xlabel="Position (cm)",
@@ -598,9 +599,9 @@ def plot_position_speed(
 
         ax = fig.add_subplot(gs[1, 2 * i + 1])
         ax.fill_between(
-            speed_tuning.index.values,
-            np.zeros(len(speed_tuning)),
-            speed_tuning[n].values,
+            speed_tuning.sel({"unit": n}).speed.data,
+            np.zeros(len(speed_tuning.speed)),
+            speed_tuning.sel({"unit": n}).data,
         )
         ax.set(
             ylabel="Firing rate (Hz)",
@@ -613,56 +614,55 @@ def plot_position_speed(
 
 
 def plot_position_speed_tuning(
-    position_tuning: pd.DataFrame,
-    speed_tuning: pd.DataFrame,
-    model_position_tuning: Optional[pd.DataFrame] = None,
-    model_speed_tuning: Optional[pd.DataFrame] = None,
+    position_tuning: xarray.DataArray,
+    speed_tuning: xarray.DataArray,
+    model_position_tuning: Optional[xarray.DataArray] = None,
+    model_speed_tuning: Optional[xarray.DataArray] = None,
 ):
     fig = plt.figure(figsize=(6 * position_tuning.shape[1], 3))
     gs = plt.GridSpec(1, 2 * position_tuning.shape[1], wspace=0.3, hspace=0.35)
     pos_ax = None
     speed_ax = None
-    for i, n in enumerate(position_tuning.columns):
+    for i, n in enumerate(position_tuning.unit):
         ax = fig.add_subplot(gs[0, 2 * i], sharey=pos_ax, sharex=pos_ax)
-        ax.plot(position_tuning[n], "--")
+        position_tuning.sel({"unit": n}).plot(linestyle="--", ax=ax)
         if model_position_tuning is not None:
-            ax.plot(model_position_tuning[n])
+            model_position_tuning.sel({"unit": n}).plot(ax=ax)
         ax.set(
             xlabel="Position (cm)", ylabel="Firing rate (Hz)", title="Position tuning"
         )
-        ax.text(1, 1.2, f"Neuron {n}", transform=ax.transAxes, size="x-large")
+        ax.text(1, 1.2, f"Neuron {n.data}", transform=ax.transAxes, size="x-large")
         if pos_ax is None:
             pos_ax = ax
 
         ax = fig.add_subplot(gs[0, 2 * i + 1], sharex=speed_ax, sharey=pos_ax)
-        ax.plot(speed_tuning[n], "--")
+        speed_tuning.sel({"unit": n}).plot(linestyle="--", ax=ax)
         if model_speed_tuning is not None:
-            ax.plot(model_speed_tuning[n])
+            model_speed_tuning.sel({"unit": n}).plot(ax=ax)
         ax.set(ylabel="Firing rate (Hz)", xlabel="Speed (cm/s)", title="Speed tuning")
         if speed_ax is None:
             speed_ax = ax
-    # fig.tight_layout()
     return fig
 
 
-def plot_place_fields(place_fields, highlight_neurons=[92, 82, 220]):
+def plot_place_fields(place_fields: xarray.DataArray, highlight_neurons=[92, 82, 220]):
     # for display purposes, sort place fields by location
-    order = place_fields.idxmax().sort_values().index.values
+    place_fields = place_fields.sortby(place_fields.argmax("distance"))
     fig = plt.figure(figsize=(12, 10))
-    gs = plt.GridSpec(place_fields.shape[1], 1)
-    for i, n in enumerate(order):
+    gs = plt.GridSpec(len(place_fields.unit), 1)
+    for i, n in enumerate(place_fields):
         plt.subplot(gs[i, 0])
-        if n in highlight_neurons:
+        if n.unit.data in highlight_neurons:
             c = "r"
         else:
             c = "C0"
         plt.fill_between(
-            place_fields.index.values,
-            np.zeros(len(place_fields)),
-            place_fields[n].values,
+            place_fields.distance.data,
+            np.zeros(len(place_fields.distance)),
+            n.data,
             facecolor=c,
         )
-        if i < place_fields.shape[1] - 1:
+        if i < len(place_fields.unit) - 1:
             plt.xticks([])
         else:
             plt.xlabel("Position (cm)")
