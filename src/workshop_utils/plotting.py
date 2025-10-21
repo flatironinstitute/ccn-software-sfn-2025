@@ -287,7 +287,7 @@ def animate_1d_convolution(tsd: nap.Tsd, kernel: NDArray, **kwargs):
 
 
 def plot_head_direction_tuning_model(
-    tuning_curves: pd.DataFrame,
+    tuning_curves,
     spikes: nap.TsGroup,
     angle: nap.Tsd,
     predicted_firing_rate: Optional[nap.TsdFrame] = None,
@@ -305,7 +305,7 @@ def plot_head_direction_tuning_model(
     Parameters
     ----------
     tuning_curves:
-        The tuning curve dataframe.
+        The tuning curve xarray.
     spikes:
         The spike times.
     angle:
@@ -332,12 +332,13 @@ def plot_head_direction_tuning_model(
     index_keep = spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).index
 
     # filter neurons
-    tuning_curves = tuning_curves.loc[:, index_keep]
+    raw_feature_dim_name = list(tuning_curves.dims)[1]
+    tuning_curves = tuning_curves.sel(unit=index_keep)
     if pref_ang is None:
-        pref_ang = tuning_curves.idxmax()
-    pref_ang = pref_ang.loc[index_keep]
+        pref_ang = tuning_curves.idxmax(dim=raw_feature_dim_name)
+
     spike_tsd = (
-        spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).to_tsd(pref_ang)
+        spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).to_tsd(pref_ang.data)
     )
 
     # plot raster and heading
@@ -352,7 +353,8 @@ def plot_head_direction_tuning_model(
     if predicted_firing_rate is not None:
         n_rows += 1
     if model_tuning_curves is not None:
-        model_tuning_curves = model_tuning_curves.loc[:, index_keep]
+        model_feature_dim_name = list(model_tuning_curves.dims)[1]
+        model_tuning_curves = model_tuning_curves.sel(unit=index_keep)
         n_rows += 1
     if figsize is None:
         figsize = [12, 6]
@@ -406,7 +408,7 @@ def plot_head_direction_tuning_model(
         ax.set_xlim(0, 5000)
 
     for i, ang in enumerate(unq_angles):
-        neu_idx = np.argsort(pref_ang.values)[i]
+        neu_idx = np.argsort(pref_ang)[i].unit
         ax = plt.subplot2grid(
             (n_rows, n_subplots),
             loc=(curr_row + i // n_subplots, i % n_subplots),
@@ -416,9 +418,9 @@ def plot_head_direction_tuning_model(
             projection="polar",
         )
         ax.fill_between(
-            tuning_curves.iloc[:, neu_idx].index,
-            np.zeros(len(tuning_curves)),
-            tuning_curves.iloc[:, neu_idx].values,
+            tuning_curves.sel(unit=neu_idx)[raw_feature_dim_name],
+            np.zeros(tuning_curves.shape[1]),
+            tuning_curves.sel(unit=neu_idx),
             color=cmap(relative_color_levs[i]),
             alpha=0.5,
         )
@@ -428,7 +430,7 @@ def plot_head_direction_tuning_model(
 
     if model_tuning_curves is not None:
         for i, ang in enumerate(unq_angles):
-            neu_idx = np.argsort(pref_ang.values)[i]
+            neu_idx = np.argsort(pref_ang)[i].unit
 
             ax = plt.subplot2grid(
                 (n_rows, n_subplots),
@@ -439,9 +441,9 @@ def plot_head_direction_tuning_model(
                 projection="polar",
             )
             ax.fill_between(
-                model_tuning_curves.iloc[:, neu_idx].index,
-                np.zeros(len(model_tuning_curves)),
-                model_tuning_curves.iloc[:, neu_idx].values,
+                model_tuning_curves.sel(unit=neu_idx)[model_feature_dim_name],
+                np.zeros(model_tuning_curves.shape[1]),
+                model_tuning_curves.sel(unit=neu_idx),
                 color=cmap(relative_color_levs[i]),
                 alpha=0.5,
             )
