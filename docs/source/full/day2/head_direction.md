@@ -1012,10 +1012,12 @@ all the coupling filters.
 ```{code-cell} ipython3
 :tags: [render-all]
 
-tuning = nap.compute_1d_tuning_curves_continuous(predicted_firing_rate,
-                                                 feature=angle,
-                                                 nb_bins=61,
-                                                 minmax=(0, 2 * np.pi))
+tuning = nap.compute_tuning_curves(
+    predicted_firing_rate,
+    features=angle,
+    bins=61,
+    range=(0, 2 * np.pi)
+)
                                                  
 fig = doc_plots.plot_coupling(responses, tuning)
 ```
