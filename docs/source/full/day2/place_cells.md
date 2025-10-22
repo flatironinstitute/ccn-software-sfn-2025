@@ -234,13 +234,6 @@ Now that we have the speed of the animal, we can compute the tuning curves for s
 tc_speed = nap.compute_tuning_curves(spikes, speed, bins=20, epochs=speed.time_support, feature_names=["speed"])
 ```
 
-<div class="render-user">
-
-+++
-
-</div>
-
-
 <div class="render-user render-presenter">
 
 - Visualize the position and speed tuning for these neurons.
@@ -353,8 +346,6 @@ As we've done before, we can now use the Poisson GLM from NeMoS to learn the com
 
 </div>
 
-<div class="render-user">
-
 ```{code-cell} ipython3
 glm = nmo.glm.PopulationGLM(
     solver_kwargs={"tol": 1e-12},
@@ -374,8 +365,6 @@ Let's check first if our model can accurately predict the tuning curves we displ
 - Remember to convert the predicted firing rate to spikes per second!
 
 </div>
-
-<div class="render-user">
 
 ```{code-cell} ipython3
 # predict the model's firing rate
@@ -447,9 +436,14 @@ This object requires an estimator, our `glm` object here, and `param_grid`, a di
 </div>
 
 ```{code-cell} ipython3
+# define a Ridge GLM
+glm = nmo.glm.PopulationGLM(
+    regularizer="Ridge",
+    solver_kwargs={"tol": 1e-12},
+    solver_name="LBFGS",
+)
 param_grid = {
     "regularizer_strength": [0.0001, 1.],
-    "regularizer": ["Ridge"]
 }
 ```
 
@@ -481,7 +475,7 @@ cv.fit(X, count)
 - Let's investigate results:
 </div>
 
-Cross-validation results are stored in a dictionary attribute called `cv_results_`, which contains a lot of info.
+Cross-validation results are stored in a dictionary attribute called `cv_results_`, which contains a lot of info. Let's convert that to a pandas dataframe for readability,
 
 ```{code-cell} ipython3
 import pandas as pd
@@ -534,7 +528,7 @@ position_basis.transform(position)
 
 </div>
 
-Transformers only accept 2d inputs, whereas nemos basis objects can accept inputs of any dimensionality. 
+Transformers only accept 2d inputs, whereas nemos basis objects can accept inputs of any dimensionality.
 
 ```{code-cell} ipython3
 position_basis.transform(position[:, np.newaxis])
@@ -559,12 +553,9 @@ basis_2d = basis_2d.to_transformer()
 x, y = np.random.randn(10, 1), np.random.randn(10, 1)
 X = np.concatenate([x, y], axis=1)
 result = basis_2d.transform(X)
-
 ```
 
 **Option 2)** Multiple input per component.
-
-+++
 
 <div class="render-user render-presenter">
 
@@ -649,6 +640,8 @@ Pipelines are objects that accept a series of (0 or more) transformers, culminat
 </div>
 
 ```{code-cell} ipython3
+# set the reg strength to the optimal
+glm = nmo.glm.PopulationGLM(solver_name="LBFGS", solver_kwargs={"tol": 10**-12})
 pipe = pipeline.Pipeline([
     ("basis", basis),
     ("glm", glm)
@@ -710,6 +703,10 @@ For scikit-learn parameter grids, we use `__` to stand in for `.`:
 <div class="render-user render-presenter">
 
 - Construct `param_grid`, using `__` to stand in for `.`
+- In sklearn pipelines, we access nested parameters using double underscores:
+  - `pipe["basis"]["position"].n_basis_funcs` ← normal Python syntax
+  - `"basis__position__n_basis_funcs"` ← sklearn parameter grid syntax
+
 </div>
 
 ```{code-cell} ipython3
@@ -772,7 +769,7 @@ Now, finally, we understand almost enough about how scikit-learn works to figure
 
 What we would like to do here is comparing alternative models: position + speed, position only or speed only. However, scikit-learn's cross-validation assumes that the input to the pipeline does not change, only the hyperparameters do. So, how do we go about model selection since we require different input for different model we want to compare?
 
-Here is a neat NeMoS trick to circumvent that. First we need to define a "null" basis taking advantage of `CustomBasis`, which defines a basis from a list of functions.
+Here is a neat NeMoS trick to circumvent that. scikit-learn's GridSearchCV assumes the INPUT stays the same across all models, but for feature selection, we want to compare models with different features (position + speed, position only, speed only). The solution: create a "null" basis that produces zero features, so all models take the same 2D input (position, speed) but some features become empty. First we need to define this "null" basis taking advantage of `CustomBasis`, which defines a basis from a list of functions.
 
 ```{code-cell} ipython3
 # this function creates an empty array (n_sample, 0)
@@ -792,11 +789,11 @@ Why is this useful? Because we can use this `null_basis` and basis composition t
 # first we note that the position + speed basis is in the basis attribute
 print(pipe["basis"].basis)
 
-position_bas = nmo.basis.MSplineEval(n_basis_funcs=10)
-speed_bas = nmo.basis.MSplineEval(n_basis_funcs=15)
+position_bas = nmo.basis.MSplineEval(n_basis_funcs=10).to_transformer()
+speed_bas = nmo.basis.MSplineEval(n_basis_funcs=15).to_transformer()
 
 # define 2D basis per each model 
-basis_all = position_basis + speed_basis
+basis_all = position_bas + speed_bas
 basis_position = position_bas + null_basis
 basis_speed = null_basis + speed_bas
 
@@ -817,7 +814,7 @@ param_grid = {
 }
 
 # finally we define and fit our CV
-cv = model_selection.GridSearchCV(pipe, param_grid, cv=2)
+cv = model_selection.GridSearchCV(pipe, param_grid, cv=cv_folds)
 cv.fit(transformer_input, count)
 ```
 
@@ -830,7 +827,6 @@ cv_df[["param_basis__basis", "mean_test_score", "rank_test_score"]]
 
 Now use all the tools that you learned to find a better model for this dataset!
 
-+++
 
 ## Conclusion
 
