@@ -590,6 +590,57 @@ plt.plot(tsd1.threshold(0.0), 'o-')
 [plt.axvspan(s, e, alpha=0.2) for s,e in ep_above.values]
 ```
 
+## First high level function : `compute_tuning_curves`
+
+<div class="render-all">
+
+Pynapple provides functions for standard analysis in systems neuroscience. The first function we will try is `compute_tuning_curves` that calculate the response of a cell to a particular feature. 
+
+A good practice when using a function for the first time is to check the docstrings to learn how to pass the argument.
+
+**Question**: can you examine the docstring of `nap.compute_tuning_curves`?
+
+```{code-cell} ipython3
+print(nap.compute_tuning_curves.__doc__)
+```
+
+<div class="render-all">
+
+**Question**: Can you compute the response (i.e. firing rate) of the units in `tsgroup` as function of the feature `tsd1` using the function `nap.compute_tuning_curves`?
+
+</div>
+
+```{code-cell} ipython3
+tc = nap.compute_tuning_curves(tsgroup, tsd1, bins=5, feature_names=["feat1"])
+tc
+```
+
+<div class="render-all">
+
+The output is an [xarray](https://docs.xarray.dev/en/stable/) object. It is a wrapper of numpy array with extra attributes. It allows to give coordinates to each dimensions as well as attaching attributes. We can make the output look better by labelling the feature we used.
+
+The coordinates can be accessed with the `coords` attribute. The feature position (i.e. center of the bin) can be accessed with the attribute.
+
+**Question**: Can you print the underlying the units number, bin center and bin edges of the tuning curve xarray object?
+
+</div>
+
+```{code-cell} ipython3
+print(tc.unit.values)
+print(tc.feat1.values)
+print(tc.occupancy)
+print(tc.bin_edges)
+print(tc.fs)
+```
+
+```{code-cell} ipython3
+<div class="render-all">
+
+**Question:** 
+
+</div>
+```
+
 ## Important
 
 <div class="render-all">
@@ -600,13 +651,13 @@ If not, please ask a TA.
 </div>
 
 ```{code-cell} ipython3
+
+```
+
+```{code-cell} ipython3
 :tags: [render-all]
 
 import workshop_utils
 path = workshop_utils.fetch_data("Mouse32-140822.nwb")
 print(path)
-```
-
-```{code-cell} ipython3
-
 ```
