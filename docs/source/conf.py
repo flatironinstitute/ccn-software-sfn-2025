@@ -22,7 +22,10 @@ extensions = [
 ]
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
-intersphinx_mapping = {'nemos': ("https://nemos.readthedocs.io/en/latest/", None)}
+intersphinx_mapping = {
+    'nemos': ("https://nemos.readthedocs.io/en/latest/", None),
+    'pynapple': ("https://pynapple.org", None),
+}
 
 templates_path = []
 exclude_patterns = []

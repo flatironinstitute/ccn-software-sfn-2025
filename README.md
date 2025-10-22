@@ -25,6 +25,8 @@ To build the site locally, clone this repo and install it in a fresh python 3.12
 
 In this workshop, we are experimenting with group projects. We will have participants break up into groups of 4 or 5, each joined by an instructor or TA, and work through a notebook using `pynapple` and `nemos` to analyze a real neuroscience dataset.
 
+Or maybe have them doing it in pairs? would avoid need for screens and mitigate quarterbacking risk
+
 - Participants should work together, making sure that everyone understands what's going on and one person isn't doing all the coding or making all the decisions.
 - Each participant should get practice writing the analysis code. How that happens is up to you: have everyone work in their own notebook, have one notebook that you take turns writing in, etc.
 - Instructors / TAs are there to answer questions, either scientific or technical, but you are encouraged to try to solve things yourself, referring back to the materials presented in the workshops as well as the package documentation.
