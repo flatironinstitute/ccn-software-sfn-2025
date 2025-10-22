@@ -7,10 +7,6 @@ We have a slack channel for communicating with attendees, if you haven't receive
 > [!NOTE]
 > The rest of this README is for contributors to the workshop.
 
-## Questions
-
-- [ ] when / where is installation help session
-
 ## Building the site locally
 
 > [!WARNING]
