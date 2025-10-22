@@ -7,6 +7,12 @@ We have a slack channel for communicating with attendees, if you haven't receive
 > [!NOTE]
 > The rest of this README is for contributors to the workshop.
 
+## TODO
+
+- [ ] decide where to put group projects on site
+- [ ] hide stuff on the website? i.e., don't need to have full toctree for all three types of notebooks
+- [ ] group projects should have "helpful links" section at the top, which link to relevant parts of the workshop, as well as documentation and other resources.
+
 ## Building the site locally
 
 > [!WARNING]
@@ -14,6 +20,19 @@ We have a slack channel for communicating with attendees, if you haven't receive
 
 
 To build the site locally, clone this repo and install it in a fresh python 3.12 environment (`pip install -e .`). Then run `make -C docs html O="-T"` and open `docs/build/html/index.html` in your browser.
+
+## Group projects
+
+In this workshop, we are experimenting with group projects. We will have participants break up into groups of 4 or 5, each joined by an instructor or TA, and work through a notebook using `pynapple` and `nemos` to analyze a real neuroscience dataset.
+
+- Participants should work together, making sure that everyone understands what's going on and one person isn't doing all the coding or making all the decisions.
+- Each participant should get practice writing the analysis code. How that happens is up to you: have everyone work in their own notebook, have one notebook that you take turns writing in, etc.
+- Instructors / TAs are there to answer questions, either scientific or technical, but you are encouraged to try to solve things yourself, referring back to the materials presented in the workshops as well as the package documentation.
+- At the end of the project time period, we will (**DECIDE**)
+    - regroup and have one or two groups present their work to the class
+    - find another group and swap notebooks, comparing their approach
+    - form new groups of three(?) all from different groups, who talk through what they did
+- if one of the second two, could have people also describe what their partner did for the whole class
 
 ## strip_text.py
 
