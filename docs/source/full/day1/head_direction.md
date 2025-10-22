@@ -4,18 +4,18 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.6
+    jupytext_version: 1.18.1
 kernelspec:
-  display_name: Python 3
-  language: python
   name: python3
+  display_name: Python 3 (ipykernel)
+  language: python
 ---
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 %matplotlib inline
 ```
-
 
 # Data analysis with pynapple
 
@@ -43,6 +43,7 @@ If an import fails, you can do `!pip install pynapple matplotlib` in a cell to f
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 import pynapple as nap
 import matplotlib.pyplot as plt
 import workshop_utils
@@ -60,6 +61,7 @@ If you have installed the repository, you can run the following cell:
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 path = workshop_utils.fetch_data("Mouse32-140822.nwb")
 
 print(path)
@@ -107,7 +109,6 @@ There are a lot of neurons. The neurons that interest us are the neurons labeled
 **Question:** Using the [slicing method](https://pynapple.org/user_guide/03_metadata.html#using-metadata-to-slice-objects) of your choice, can you select only the neurons in `adn` that are above 1 Hz firing rate?
 
 </div>
-
 
 ```{code-cell} ipython3
 spikes = spikes[(spikes.location=='adn') & (spikes.rate>1.0)]
@@ -162,7 +163,6 @@ NWB file can save intervals with multiple labels. The object `IntervalSet` inclu
 
 </div>
 
-
 ```{code-cell} ipython3
 wake_ep = epochs[epochs.tags=="wake"]
 sleep_ep = epochs[epochs.tags=="sleep"]
@@ -178,7 +178,6 @@ To do this in pynapple, all you need is a single line of code!
 **Question:** can you compute the firing rate of ADn units as a function of heading direction, i.e. a head-direction tuning curve and call the variable `tuning_curves`?
 
 </div>
-
 
 ```{code-cell} ipython3
 tuning_curves = nap.compute_1d_tuning_curves(
@@ -216,7 +215,6 @@ The next cell allows us to get a quick estimate of the neurons's preferred direc
 
 </div>
 
-
 ```{code-cell} ipython3
 :tags: [render-all]
 
@@ -241,7 +239,6 @@ This index maps a neuron to a preferred direction between 0 and 360 degrees.
 For the sake of visibility, you should restrict the data to the following epoch : `ex_ep = nap.IntervalSet(start=8910, end=8960)`.
 
 </div>
-
 
 ```{code-cell} ipython3
 ex_ep = nap.IntervalSet(start=8910, end=8960)
@@ -375,7 +372,6 @@ plt.plot(cc_wake[(7, 20)])
 
 </div>
 
-
 ```{code-cell} ipython3
 index = spikes.keys()
 
@@ -404,7 +400,6 @@ cc_sleep = nap.compute_crosscorrelogram(spikes, 0.02, 1.0, ep=sleep_ep)
 
 **Question:** can you display the cross-correlogram for wakefulness and sleep of the same pairs of neurons?
 </div>
-
 
 ```{code-cell} ipython3
 plt.figure()
@@ -435,7 +430,6 @@ plt.plot(cc_sleep[(7, 26)])
 Sometimes, some events occurs during recording such as rewards. There was no particular events during this recording but we can look for when the head-direction is close to a particular direction as an event.
 
 </div>
-
 
 ```{code-cell} ipython3
 :tags: [render-all]
@@ -475,7 +469,6 @@ plt.plot(peth.to_tsd(), '|')
 
 </div>
 
-
 ```{code-cell} ipython3
 mean_fr = np.mean(peth.count(0.1)/0.1, 1)
 ```
@@ -500,7 +493,6 @@ Is this a strong effect? We would like to compare this to surrogate dataset.
 
 **Question:** Shuffling the spike trains, can you generate a mean random PETH to compare to the true mean PETH?
 </div>
-
 
 ```{code-cell} ipython3
 rand_ts = nap.shuffle_ts_intervals(spikes[9])

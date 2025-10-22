@@ -4,15 +4,16 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.6
+    jupytext_version: 1.18.1
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 %matplotlib inline
 ```
 
@@ -49,6 +50,7 @@ If an import fails, you can do `!pip install pynapple matplotlib` in a cell to f
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 import pynapple as nap
 import matplotlib.pyplot as plt
 import numpy as np
@@ -57,9 +59,9 @@ import workshop_utils
 
 For this notebook we will work with fake data. The following cells generate a set of variables that we will use to create the different pynapple objects.
 
-
 ```{code-cell} ipython3
 :tags: [render-all]
+
 var1 = np.random.randn(100) # Variable 1
 tsp1 = np.arange(100) # The timesteps of variable 1
 
@@ -89,7 +91,6 @@ Let's start with the simple ones.
 **Question:** Can you instantiate the right pynapple objects for `var1`, `var2` and `var3`? Objects should be named respectively `tsd1`, `tsd2` and `tsd3`. Don't forget the column name for `var2`.
 
 </div>
-
 
 ```{code-cell} ipython3
 tsd1 = nap.Tsd(t=tsp1, d=var1)
@@ -237,6 +238,7 @@ print(tsd1.time_support)
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 ep_tmp = nap.IntervalSet(np.sort(np.random.uniform(0, 100, 20)))
 print(ep_tmp)
 ```
@@ -256,6 +258,7 @@ You can visualize IntervalSet using the function `workshop_utils.visualize_inter
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 workshop_utils.visualize_intervals([ep_signal, ep_tmp, ep_signal.intersect(ep_tmp)])
 ```
 
@@ -294,7 +297,6 @@ print(ep_signal.set_diff(ep_tmp))
 ```{code-cell} ipython3
 workshop_utils.visualize_intervals([ep_signal, ep_tmp, ep_signal.set_diff(ep_tmp)])
 ```
-
 
 ## Numpy & pynapple
 
@@ -352,7 +354,6 @@ Sometimes you want to get a data point as close as possible in time to another t
 **Question:** Using the `get` method, can you get the data point from `tsd3` as close as possible to the time 50.1 seconds?
 
 </div>
-
 
 ```{code-cell} ipython3
 print(tsd3.get(50.1))
@@ -432,13 +433,12 @@ They can be used to slice objects.
 **Question:** Can you select only the elements of `tsgroup` with rate below 1Hz?
 </div>
 
-```{code-cell} ipython
+```{code-cell} ipython3
 print(tsgroup[tsgroup.rate<1.0])
 
 print(tsgroup[tsgroup['rate']<1.0])
 
 print(tsgroup.getby_threshold("rate", 1, "<"))
-
 ```
 
 <div class="render-all">
@@ -446,13 +446,13 @@ print(tsgroup.getby_threshold("rate", 1, "<"))
 **Question:** Can you select the intervals in `ep` labelled as `'left'`?
 </div>
 
-```{code-cell} ipython
+```{code-cell} ipython3
 print(ep[ep.direction=='left'])
 ```
 
 ### Special case of slicing : `TsdFrame`
 
-```{code-cell} ipython
+```{code-cell} ipython3
 :tags: [render-all]
 
 tsdframe = nap.TsdFrame(t=np.arange(4), d=np.random.randn(4,3),
@@ -466,7 +466,7 @@ print(tsdframe)
 **Question:** What happen when you do `tsdframe[0]` vs `tsdframe[:,0]` vs `tsdframe[[12,1]]`
 </div>
 
-```{code-cell} ipython
+```{code-cell} ipython3
 print(tsdframe[0])
 ```
 
@@ -475,21 +475,20 @@ print(tsdframe[0])
 **Question:** What happen when you do `tsdframe.loc[0]` and `tsdframe.loc[[0,1]]`
 </div>
 
-```{code-cell} ipython
+```{code-cell} ipython3
 print(tsdframe.loc[0])
 print(tsdframe.loc[[0,1]])
 ```
 
 <div class="render-all">
 
-**Question:** What happen when you do `tsdframe[tsdframe.alpha==2]`
+**Question:** What happen when you do `tsdframe[:,tsdframe.alpha==2]`
 
 </div>
 
-```{code-cell} ipython
-print(tsdframe[tsdframe.alpha==2])
+```{code-cell} ipython3
+print(tsdframe[:,tsdframe.alpha==2])
 ```
-
 
 ## Core functions of pynapple 
 
@@ -509,7 +508,6 @@ Pynapple works directly with matplotlib. Passing a time series object to `plt.pl
 
 **Question:** In two subplots, can you show the count and events over time?
 
-
 ```{code-cell} ipython3
 plt.figure()
 ax = plt.subplot(211)
@@ -525,7 +523,6 @@ From a set of timestamps, you want to assign them a set of values with the close
 **Question:** Using the function `value_from`, can you assign values to `ts2` from the `tsd1` time series and call the output `new_tsd`?
 
 </div>
-
 
 ```{code-cell} ipython3
 new_tsd = ts2.value_from(tsd1)
@@ -593,6 +590,57 @@ plt.plot(tsd1.threshold(0.0), 'o-')
 [plt.axvspan(s, e, alpha=0.2) for s,e in ep_above.values]
 ```
 
+## First high level function : `compute_tuning_curves`
+
+<div class="render-all">
+
+Pynapple provides functions for standard analysis in systems neuroscience. The first function we will try is `compute_tuning_curves` that calculate the response of a cell to a particular feature. 
+
+A good practice when using a function for the first time is to check the docstrings to learn how to pass the argument.
+
+**Question**: can you examine the docstring of `nap.compute_tuning_curves`?
+
+```{code-cell} ipython3
+print(nap.compute_tuning_curves.__doc__)
+```
+
+<div class="render-all">
+
+**Question**: Can you compute the response (i.e. firing rate) of the units in `tsgroup` as function of the feature `tsd1` using the function `nap.compute_tuning_curves`?
+
+</div>
+
+```{code-cell} ipython3
+tc = nap.compute_tuning_curves(tsgroup, tsd1, bins=5, feature_names=["feat1"])
+tc
+```
+
+<div class="render-all">
+
+The output is an [xarray](https://docs.xarray.dev/en/stable/) object. It is a wrapper of numpy array with extra attributes. It allows to give coordinates to each dimensions as well as attaching attributes. We can make the output look better by labelling the feature we used.
+
+The coordinates can be accessed with the `coords` attribute. The feature position (i.e. center of the bin) can be accessed with the attribute.
+
+**Question**: Can you print the underlying the units number, bin center and bin edges of the tuning curve xarray object?
+
+</div>
+
+```{code-cell} ipython3
+print(tc.unit.values)
+print(tc.feat1.values)
+print(tc.occupancy)
+print(tc.bin_edges)
+print(tc.fs)
+```
+
+```{code-cell} ipython3
+<div class="render-all">
+
+**Question:** 
+
+</div>
+```
+
 ## Important
 
 <div class="render-all">
@@ -602,9 +650,13 @@ If not, please ask a TA.
 
 </div>
 
+```{code-cell} ipython3
+
+```
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 import workshop_utils
 path = workshop_utils.fetch_data("Mouse32-140822.nwb")
 print(path)
