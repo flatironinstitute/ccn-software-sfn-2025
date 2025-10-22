@@ -600,6 +600,8 @@ A good practice when using a function for the first time is to check the docstri
 
 **Question**: can you examine the docstring of `nap.compute_tuning_curves`?
 
+</div>
+
 ```{code-cell} ipython3
 print(nap.compute_tuning_curves.__doc__)
 ```
@@ -633,12 +635,20 @@ print(tc.bin_edges)
 print(tc.fs)
 ```
 
-```{code-cell} ipython3
 <div class="render-all">
 
-**Question:** 
+**Question**: Can you plot the tuning curves for all units?
 
 </div>
+
+```{code-cell} ipython3
+# tc.plot()
+# tc.plot(row="unit")
+# tc.plot(col="unit")
+# tc[1].plot()
+# plt.plot(tc[1].feat1, tc[1].values)
+plt.plot(tc.feat1, tc.values.T)
+
 ```
 
 ## Important
@@ -649,10 +659,6 @@ print(tc.fs)
 If not, please ask a TA.
 
 </div>
-
-```{code-cell} ipython3
-
-```
 
 ```{code-cell} ipython3
 :tags: [render-all]
