@@ -183,7 +183,7 @@ To decrease computation time, we're going to spend the rest of the notebook focu
 :tags: [render-all]
 
 neurons = [82, 92, 220]
-place_fields = place_fields.sel({"unit": neurons})
+place_fields = place_fields.sel(unit=neurons)
 spikes = spikes[neurons]
 bin_size = .01
 count = spikes.count(bin_size, ep=position.time_support)
@@ -233,13 +233,6 @@ Now that we have the speed of the animal, we can compute the tuning curves for s
 ```{code-cell} ipython3
 tc_speed = nap.compute_tuning_curves(spikes, speed, bins=20, epochs=speed.time_support, feature_names=["speed"])
 ```
-
-<div class="render-user">
-
-+++
-
-</div>
-
 
 <div class="render-user render-presenter">
 
@@ -353,8 +346,6 @@ As we've done before, we can now use the Poisson GLM from NeMoS to learn the com
 
 </div>
 
-<div class="render-user">
-
 ```{code-cell} ipython3
 glm = nmo.glm.PopulationGLM(
     solver_kwargs={"tol": 1e-12},
@@ -374,8 +365,6 @@ Let's check first if our model can accurately predict the tuning curves we displ
 - Remember to convert the predicted firing rate to spikes per second!
 
 </div>
-
-<div class="render-user">
 
 ```{code-cell} ipython3
 # predict the model's firing rate
@@ -447,8 +436,14 @@ This object requires an estimator, our `glm` object here, and `param_grid`, a di
 </div>
 
 ```{code-cell} ipython3
+# define a Ridge GLM
+glm = nmo.glm.PopulationGLM(
+    regularizer="Ridge",
+    solver_kwargs={"tol": 1e-12},
+    solver_name="LBFGS",
+)
 param_grid = {
-    "regularizer": ["UnRegularized", "Ridge"],
+    "regularizer_strength": [0.0001, 1.],
 }
 ```
 
@@ -480,29 +475,16 @@ cv.fit(X, count)
 - Let's investigate results:
 </div>
 
-Cross-validation results are stored in a dictionary attribute called `cv_results_`, which contains a lot of info.
+Cross-validation results are stored in a dictionary attribute called `cv_results_`, which contains a lot of info. Let's convert that to a pandas dataframe for readability,
 
 ```{code-cell} ipython3
-cv.cv_results_
+import pandas as pd
+
+pd.DataFrame(cv.cv_results_)
 ```
 
 The most informative for us is the `'mean_test_score'` key, which shows the average of `glm.score` on each test-fold. Thus, higher is better, and we can see that the UnRegularized model performs better.
 
-<div class="render-all">
-
-:::{note}
-You could (and generally, should!) investigate `regularizer_strength`, but we're skipping for simplicity. To do this properly, use a slightly different syntax for `param_grid` (list of dictionaries, instead of single dictionary)
-
-```python
-param_grid = [
-    {"regularizer": [nmo.regularizer.UnRegularized()]},
-    {"regularizer": [nmo.regularizer.Ridge()],
-     "regularizer_strength": [1e-6, 1e-3, 1]}
-]
-```
-:::
-
-</div>
 
 ### Select basis
 
@@ -519,9 +501,10 @@ Unlike the glm objects, our basis objects are not scikit-learn compatible right 
 </div>
 
 ```{code-cell} ipython3
-position_basis = nmo.basis.MSplineEval(n_basis_funcs=10).to_transformer()
+position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position").to_transformer()
 # or equivalently:
-position_basis = nmo.basis.TransformerBasis(nmo.basis.MSplineEval(n_basis_funcs=10))
+position_basis = nmo.basis.TransformerBasis(nmo.basis.MSplineEval(n_basis_funcs=10, label="position"))
+position_basis
 ```
 
 This gives the basis object the `transform` method, which is equivalent to `compute_features`. However, transformers have some limits:
@@ -542,20 +525,37 @@ position_basis.transform(position)
 <div class="render-user render-presenter">
 
 - Transformers only accept 2d inputs, whereas nemos basis objects can accept inputs of any dimensionality.
-- In order to tell nemos how to reshape the 2d matrix that is the input of `transform` to whatever the basis accepts, you need to call `set_input_shape`:
 
 </div>
 
-Transformers only accept 2d inputs, whereas nemos basis objects can accept inputs of any dimensionality. In order to tell nemos how to reshape the 2d matrix that is the input of `transform` to whatever the basis accepts, you need to call `set_input_shape`:
+Transformers only accept 2d inputs, whereas nemos basis objects can accept inputs of any dimensionality.
 
 ```{code-cell} ipython3
-# can accept array
-position_basis.set_input_shape(position)
-# int
-position_basis.set_input_shape(1)
-# tuple
-position_basis.set_input_shape(position.shape[1:])
+position_basis.transform(position[:, np.newaxis])
 ```
+
+<div class="render-user render-presenter">
+
+- If the basis is composite (for example, the addition of two 1D bases), the transformer will expect a shape of `(n_sampels, 1)` each 1D component. If that's not the case, you need to call `set_input_shape`:
+
+</div>
+
+If the basis has more than one component (for example, if it is the addition of two 1D bases), the transformer will expect an input shape of `(n_sampels, 1)` pre component. If that's not the case, you'll provide a different input shape by calling `set_input_shape`.
+
+**Option 1)** One input per component:
+
+```{code-cell} ipython3
+# generate a composite basis
+basis_2d = nmo.basis.MSplineEval(5) +  nmo.basis.MSplineEval(5)
+basis_2d = basis_2d.to_transformer()
+
+# this will work: 1 input per component
+x, y = np.random.randn(10, 1), np.random.randn(10, 1)
+X = np.concatenate([x, y], axis=1)
+result = basis_2d.transform(X)
+```
+
+**Option 2)** Multiple input per component.
 
 <div class="render-user render-presenter">
 
@@ -563,8 +563,23 @@ position_basis.set_input_shape(position.shape[1:])
 </div>
 
 ```{code-cell} ipython3
-# input needs to be 2d, so use expand_dims
-position_basis.transform(np.expand_dims(position, 1))
+# Assume 2 input for the first component and 3 for the second.
+x, y = np.random.randn(10, 2), np.random.randn(10, 3)
+X = np.concatenate([x, y], axis=1)
+try:
+    basis_2d.transform(X)
+except Exception as e:
+    print("Exception Raised:")
+    print(repr(e))
+
+# Set the expected input shape instead.
+
+# array
+res1 = basis_2d.set_input_shape(x, y).transform(X)
+# int
+res2 = basis_2d.set_input_shape(2, 3).transform(X)
+# tuple
+res3 = basis_2d.set_input_shape((2,), (3,)).transform(X)
 ```
 
 <div class="render-all">
@@ -574,11 +589,12 @@ position_basis.transform(np.expand_dims(position, 1))
 </div>
 
 ```{code-cell} ipython3
-position_basis = nmo.basis.MSplineEval(n_basis_funcs=10)
+position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position")
 position_basis.compute_features(position)
 position_basis = position_basis.to_transformer()
-speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15).to_transformer().set_input_shape(1)
+speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15, label="speed").to_transformer().set_input_shape(1)
 basis = position_basis + speed_basis
+basis
 ```
 
 Let's create a single TsdFrame to hold all our inputs:
@@ -593,7 +609,7 @@ Let's create a single TsdFrame to hold all our inputs:
 
 transformer_input = nap.TsdFrame(
     t=position.t,
-    d=np.stack([position.d, speed.d], 1),
+    d=np.stack([position, speed], 1),
     time_support=position.time_support,
     columns=["position", "speed"],
 )
@@ -624,6 +640,8 @@ Pipelines are objects that accept a series of (0 or more) transformers, culminat
 </div>
 
 ```{code-cell} ipython3
+# set the reg strength to the optimal
+glm = nmo.glm.PopulationGLM(solver_name="LBFGS", solver_kwargs={"tol": 10**-12})
 pipe = pipeline.Pipeline([
     ("basis", basis),
     ("glm", glm)
@@ -676,8 +694,8 @@ Let's cross-validate on:
 </div>
 
 ```{code-cell} ipython3
-print(pipe["basis"].basis1.n_basis_funcs)
-print(pipe["basis"].basis2)
+print(pipe["basis"]["position"].n_basis_funcs)
+print(pipe["basis"]["speed"])
 ```
 
 For scikit-learn parameter grids, we use `__` to stand in for `.`:
@@ -685,12 +703,16 @@ For scikit-learn parameter grids, we use `__` to stand in for `.`:
 <div class="render-user render-presenter">
 
 - Construct `param_grid`, using `__` to stand in for `.`
+- In sklearn pipelines, we access nested parameters using double underscores:
+  - `pipe["basis"]["position"].n_basis_funcs` ← normal Python syntax
+  - `"basis__position__n_basis_funcs"` ← sklearn parameter grid syntax
+
 </div>
 
 ```{code-cell} ipython3
 param_grid = {
-    "basis__basis1__n_basis_funcs": [5, 10, 20],
-    "basis__basis2": [nmo.basis.MSplineEval(15).set_input_shape(1),
+    "basis__position__n_basis_funcs": [5, 10, 20],
+    "basis__speed": [nmo.basis.MSplineEval(15).set_input_shape(1),
                       nmo.basis.BSplineEval(15).set_input_shape(1),
                       nmo.basis.RaisedCosineLinearEval(15).set_input_shape(1)],
 }
@@ -712,29 +734,7 @@ cv.fit(transformer_input, count)
 </div>
 
 ```{code-cell} ipython3
-cv.cv_results_
-```
-
-Now that our `param_grid` is more complex, our results dictionary has gotten harder to understand. Let's convert it to a [pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html) to make it a bit easier to understand.
-
-We can also make use of a helper function to create a summary heatmap.
-
-:::{note}
-
-[pandas](https://pandas.pydata.org/) is a very helpful python library for representing and analyzing structured data. If you are unfamiliar with pandas, [Jake VanderPlas's Python Data Science Handbook](https://jakevdp.github.io/PythonDataScienceHandbook/) contains a [good introduction](https://jakevdp.github.io/PythonDataScienceHandbook/03.01-introducing-pandas-objects.html).
-
-:::
-
-<div class="render-user render-presenter">
-
-- These results are more complicated, so let's use [pandas dataframe](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html) to make them a bit more understandable:
-</div>
-
-```{code-cell} ipython3
-cv_df = pd.DataFrame(cv.cv_results_)
-cv_df
-# helper function for visualization
-workshop_utils.plot_heatmap_cv_results(cv_df)
+pd.DataFrame(cv.cv_results_)
 ```
 
 scikit-learn does not cache every model that it runs (that could get prohibitively large!), but it does store the best estimator, as the appropriately-named `best_estimator_`.
@@ -765,171 +765,68 @@ visualize_model_predictions(best_estim, transformer_input)
 
 ### Feature selection
 
-Now, finally, we understand almost enough about how scikit-learn works to figure out whether both position and speed are necessary inputs, i.e., to do feature selection. There's just one more thing to learn: feature masks.
+Now, finally, we understand almost enough about how scikit-learn works to figure out whether both position and speed are necessary inputs, i.e., to do feature selection. 
 
-Each `PopulationGLM` object has a feature mask attribute, which allows us to exclude certain parts of the input. Its shape is `X.shape[1]` (number of columns in the design matrix) by `n_neurons` (number of neurons we're trying to predict) and, if it's not specified explicitly, a default mask including everything is created:
+What we would like to do here is comparing alternative models: position + speed, position only or speed only. However, scikit-learn's cross-validation assumes that the input to the pipeline does not change, only the hyperparameters do. So, how do we go about model selection since we require different input for different model we want to compare?
 
-<div class="render-user render-presenter">
-
-- Now one more thing we can do with scikit-learn!
-- Each `PopulationGLM` object has a feature mask, which allows us to exclude certain parts of the input
-- Feature mask shape: `X.shape[1]` (number of columns in the design matrix) by `n_neurons` (number of neurons we're trying to predict)
-- (By default, everything is included.)
-</div>
+Here is a neat NeMoS trick to circumvent that. scikit-learn's GridSearchCV assumes the INPUT stays the same across all models, but for feature selection, we want to compare models with different features (position + speed, position only, speed only). The solution: create a "null" basis that produces zero features, so all models take the same 2D input (position, speed) but some features become empty. First we need to define this "null" basis taking advantage of `CustomBasis`, which defines a basis from a list of functions.
 
 ```{code-cell} ipython3
-pipe['glm'].feature_mask
-print(pipe['glm'].feature_mask.shape)
+# this function creates an empty array (n_sample, 0)
+def func(x):
+    return np.zeros((x.shape[0], 0))
+
+# Create a null basis using the custom basis class
+null_basis = nmo.basis.CustomBasis([func]).to_transformer()
+
+# this creates an empty feature
+null_basis.compute_features(position).shape
 ```
 
-```{code-cell} ipython3
-workshop_utils.plot_feature_mask(pipe["glm"].feature_mask);
-```
-
-We could manually edit feature mask the feature mask, but we have some helper functions to help easily create them:
-
-<div class="render-user render-presenter">
-- We could manually edit feature mask, but have some helper functions -- these are currently being developed, so any feedback is appreciated!
-- By default, we include all features:
-
-</div>
+Why is this useful? Because we can use this `null_basis` and basis composition to do model selection.
 
 ```{code-cell} ipython3
-m = workshop_utils.create_feature_mask(pipe["basis"], n_neurons=count.shape[1])
-workshop_utils.plot_feature_mask(m);
-```
+# first we note that the position + speed basis is in the basis attribute
+print(pipe["basis"].basis)
 
-This function makes use of our additive basis to figure out the structure in the input and allows us to selectively remove some of the features:
+position_bas = nmo.basis.MSplineEval(n_basis_funcs=10).to_transformer()
+speed_bas = nmo.basis.MSplineEval(n_basis_funcs=15).to_transformer()
 
-<div class="render-user render-presenter">
+# define 2D basis per each model 
+basis_all = position_bas + speed_bas
+basis_position = position_bas + null_basis
+basis_speed = null_basis + speed_bas
 
-- Make use of our additive basis to figure out the structure in the input
-- Can selectively remove some of the features:
-</div>
+# assign label (not necessary but nice)
+basis_all.label = "position + speed"
+basis_position.label = "position"
+basis_speed.label = "speed"
 
-```{code-cell} ipython3
-m = workshop_utils.create_feature_mask(pipe["basis"], ["all", "none"], n_neurons=count.shape[1])
-fig=workshop_utils.plot_feature_mask(m);
-```
 
-To perform feature selection, we'll want to compare three masks: one including all inputs, one including just the position inputs, and one including just the speed inputs.
+# then we create a parameter grid defining a grid of 2D basis for each model of interest
+param_grid = {
+    "basis__basis": 
+    [
+        basis_all,  
+        basis_position, 
+        basis_speed 
+    ],
+}
 
-<div class="render-user render-presenter">
-
-- Can construct a set of feature masks that includes / excludes each of the sets of inputs:
-</div>
-
-```{code-cell} ipython3
-feature_masks = [
-    workshop_utils.create_feature_mask(basis, "all", n_neurons=count.shape[1]),
-    workshop_utils.create_feature_mask(basis, ["all", "none"], n_neurons=count.shape[1]),
-    workshop_utils.create_feature_mask(basis, ["none", "all"], n_neurons=count.shape[1]),
-]
-
-workshop_utils.plot_feature_mask(feature_masks, ["All", "Position", "Speed"]);
-```
-
-One more wrinkle: the shape of this feature mask depends on the number of basis functions! (The number of features is `basis.n_basis_funcs = basis.basis1.n_basis_funcs + basis.basis2.n_basis_funcs`.) Thus we need to create a new feature mask for each possible arrangement. We do this in a helper function as well:
-
-<div class="render-user render-presenter">
-
-- One more wrinkle: the shape of this feature mask depends on the number of basis functions!
-- Thus, must create a new feature mask for each possible arrangement:
-</div>
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-param_grid = workshop_utils.create_feature_mask_paramgrid(basis, [5, 10, 20], 
-                                                          [8, 16, 32], count.shape[1])
-```
-
-Now, as before, initialize and fit `GridSearchCV`:
-
-<div class="render-user render-presenter">
-
-- Initialize and fit GridSearchCV
-</div>
-
-```{code-cell} ipython3
-cv = model_selection.GridSearchCV(best_estim, param_grid, cv=cv_folds)
+# finally we define and fit our CV
+cv = model_selection.GridSearchCV(pipe, param_grid, cv=cv_folds)
 cv.fit(transformer_input, count)
 ```
 
-And examine the results:
-
-<div class="render-user render-presenter">
-
-- Investigate results using pandas
-</div>
-
 ```{code-cell} ipython3
 cv_df = pd.DataFrame(cv.cv_results_)
-cv_df
+
+# let's just plot a minimal subset of cols
+cv_df[["param_basis__basis", "mean_test_score", "rank_test_score"]]
 ```
 
-<div class="render-user render-presenter">
+Now use all the tools that you learned to find a better model for this dataset!
 
-- For our own sanity, let's create an easier-to-read label:
-</div>
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-# create a custom label to make the results easier to parse
-def label_feature_mask(x):
-    mask = x.param_glm__feature_mask
-    if mask.sum() / np.prod(mask.shape) == 1:
-        return "all"
-    elif mask[0,0] == 1:
-        return "position"
-    else:
-        return "speed"
-
-cv_df['feature_mask_label'] = cv_df.apply(label_feature_mask, 1)
-```
-
-<div class="render-user render-presenter">
-
-- And visualize:
-</div>
-
-```{code-cell} ipython3
-workshop_utils.plot_heatmap_cv_results(cv_df, "feature_mask_label", columns="param_basis__basis2__n_basis_funcs")
-```
-
-<div class="render-user">
-
-- What do we see?
-</div>
-
-<div class="render-presenter">
-
-From the above plots, we can see that:
-- Position matters more than speed.
-- Number of basis functions for speed doesn't matter much.
-- We don't need many basis functions to represent the position.
-
-</div>
-
-From the above plots, we can see that:
-- Position matters more than speed.
-- Number of basis functions for speed doesn't matter much.
-- We don't need many basis functions to represent the position.
-
-Let's visualize the predictions of the best estimator.
-
-<div class="render-user render-presenter">
-
-- Visualize model predictions!
-
-</div>
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-visualize_model_predictions(cv.best_estimator_, transformer_input)
-```
 
 ## Conclusion
 
