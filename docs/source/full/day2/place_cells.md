@@ -48,9 +48,9 @@ This notebook can be downloaded as **{nb-download}`place_cells.ipynb`**. See the
 
 :::
 
-# Model and feature selection with scikit-learn
+# Model selection
 
-Data for this notebook comes from recordings in the mouse hippocampus while the mouse runs on a linear track. We explored this data [yesterday](../day1/phase_precession.md). Today, we will see that the neurons present in this recording show both tuning for both speed and location (i.e., place fields). However, location and speed are highly correlated. We would like to know which feature is more informative for predicting neuronal firing rate --- how do we do that?
+In this session we will keep working on the hippocampal place field recordings. In particular, we will learn how to model neural responses to multiple predictors: position, speed and theta phase. We will also learn how we can leverage GLM to assess which predictor is more informative for explaining the observed activity.
 
 <div class="render-user">
 Data for this notebook comes from recordings in the mouse hippocampus while the mouse runs on a linear track, which we [explored yesterday](../day1/phase_precession-users.md).
@@ -61,10 +61,7 @@ Data for this notebook comes from recordings in the mouse hippocampus while the 
 ## Learning objectives
 
 - Review how to use pynapple to analyze neuronal tuning
-- Learn how to combine NeMoS basis objects
-- Learn how to use NeMoS objects with [scikit-learn](https://scikit-learn.org/) for cross-validation
-- Learn how to use NeMoS objects with scikit-learn [pipelines](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)
-- Learn how to use cross-validation to perform model and feature selection
+- Learn how to combine NeMoS basis objects for modeling multiple predictors
 
 </div>
 
@@ -410,6 +407,18 @@ def visualize_model_predictions(glm, X):
 
     workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_pos, glm_speed);
 ```
+
+<div class="render-all">
+
+In our previous analysis of the place field hyppocampal dataset we compared multiple encoding models and tried to figure out which predictor (position, speed or phase) had more explanatory power. In this notebook we will keep going on that effort and learn more principled (and convenient) approaches to model comparison combining NeMoS and scikit-learn.
+
+## Learning Objectives
+
+- Learn how to use NeMoS objects with [scikit-learn](https://scikit-learn.org/) for cross-validation
+- Learn how to use NeMoS objects with scikit-learn [pipelines](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)
+- Learn how to use cross-validation to perform model and feature selection
+- 
+</div>
 
 ## Scikit-learn
 
@@ -845,3 +854,7 @@ Various combinations of features can lead to different results. Feel free to exp
 The data in this tutorial comes from [Grosmark, Andres D., and György Buzsáki. "Diversity in neural firing dynamics supports both rigid and learned hippocampal sequences." Science 351.6280 (2016): 1440-1443](https://www.science.org/doi/full/10.1126/science.aad1935).
 
 </div>
+
+```{code-cell} ipython3
+
+```
