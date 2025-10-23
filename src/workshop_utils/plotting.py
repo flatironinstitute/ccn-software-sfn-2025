@@ -354,7 +354,8 @@ def plot_head_direction_tuning_model(
     if predicted_firing_rate is not None:
         n_rows += 1
     if model_tuning_curves is not None:
-        model_tuning_curves = model_tuning_curves.loc[:, index_keep]
+        model_feature_dim_name = list(model_tuning_curves.dims)[1]
+        model_tuning_curves = model_tuning_curves.sel(unit=index_keep)
         n_rows += 1
     if figsize is None:
         figsize = [12, 6]
@@ -408,7 +409,7 @@ def plot_head_direction_tuning_model(
         ax.set_xlim(0, 5000)
 
     for i, ang in enumerate(unq_angles):
-        neu_idx = np.argsort(pref_ang.values)[i]
+        neu_idx = np.argsort(pref_ang)[i].unit
         ax = plt.subplot2grid(
             (n_rows, n_subplots),
             loc=(curr_row + i // n_subplots, i % n_subplots),
@@ -430,7 +431,7 @@ def plot_head_direction_tuning_model(
 
     if model_tuning_curves is not None:
         for i, ang in enumerate(unq_angles):
-            neu_idx = np.argsort(pref_ang.values)[i]
+            neu_idx = np.argsort(pref_ang)[i].unit
 
             ax = plt.subplot2grid(
                 (n_rows, n_subplots),
