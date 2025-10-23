@@ -80,16 +80,12 @@ html_theme_options = {
         },
     ],
 }
-nb_execution_excludepatterns = ['*model_selection*', '*-users*', '*-presenters*']
 nb_execution_mode = "cache"
 
 if run_nb := os.environ.get("RUN_NB"):
     all_nbs = glob.glob("full/**/*md", recursive=True)
-    print(all_nbs)
     all_nbs = [pathlib.Path(n).stem for n in all_nbs]
-    print(all_nbs)
     run_globs = [f"*{n}*" for n in run_nb.split(",")]
-    print(run_globs)
     nb_execution_excludepatterns = [
         f"*{n}*"
         for n in all_nbs
@@ -99,3 +95,5 @@ if run_nb := os.environ.get("RUN_NB"):
 else:
     nb_execution_excludepatterns = []
     print("Running all notebooks, see CONTRIBUTING for details")
+
+nb_execution_excludepatterns += ['*model_selection*', '*-users*', '*-presenters*']
