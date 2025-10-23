@@ -38,6 +38,14 @@ Or maybe have them doing it in pairs? would avoid need for screens and mitigate 
     - form new groups of three(?) all from different groups, who talk through what they did
 - if one of the second two, could have people also describe what their partner did for the whole class
 
+Possibility:
+- Have them work in pairs, grouped into pods of 2 or 3 pairs. Each pod has a single instructor / TA.
+    - We should create pairs in advance, trying to match technical levels and scientific interests.
+- Show slide of norms beforehand, which are basically the notes from above: everyone should spend time typing, everyone has something to contribute, this is cooperative, think out loud and consult each other.
+- For sharing at end of session:
+    - could do a "gallery" in pods: have one group talk through the steps in their notebook and ask if anyone has something different / interesting they did.
+    - then come back as a big group and ask bigger meta questions
+
 ## strip_text.py
 
 This script creates two copies of each file found at `docs/source/full/*/*md`, the copies are placed at `docs/source/users/*/*.md` and `docs/source/presenters/*/*.md`. Neither of these copies are run; the presenters version is intended as a reference for presenters, while the users version is what users will start with.
