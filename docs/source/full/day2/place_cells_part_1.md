@@ -226,6 +226,8 @@ Now that we have the speed of the animal, we can compute the tuning curves for s
 </div>
 
 ```{code-cell} ipython3
+:tags: [render-all]
+
 tc_speed = nap.compute_tuning_curves(spikes, speed, bins=20, epochs=speed.time_support, feature_names=["speed"])
 ```
 
@@ -296,6 +298,8 @@ Later in this notebook, we'll show how to cross-validate across basis identity, 
 </div>
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
+
 position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position")
 speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15, label="speed")
 workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
@@ -313,6 +317,8 @@ Instead, NeMoS allows us to combine multiple basis objects into a single "additi
 </div>
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
+
 # equivalent to calling nmo.basis.AdditiveBasis(position_basis, speed_basis)
 basis = position_basis + speed_basis
 ```
@@ -326,6 +332,8 @@ basis = position_basis + speed_basis
 </div>
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
+
 X = basis.compute_features(position, speed)
 X
 ```
@@ -343,6 +351,9 @@ As we've done before, we can now use the Poisson GLM from NeMoS to learn the com
 </div>
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
+
+
 glm = nmo.glm.PopulationGLM(
     solver_kwargs={"tol": 1e-12},
     solver_name="LBFGS",
@@ -363,6 +374,8 @@ Let's check first if our model can accurately predict the tuning curves we displ
 </div>
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
+
 # predict the model's firing rate
 predicted_rate = glm.predict(X) / bin_size
 
@@ -396,6 +409,8 @@ lines, because we're going to be visualizing our model predictions a lot.
 </div>
 
 ```{code-cell} ipython3
+:tag: [render-all]
+
 def visualize_model_predictions(glm, X):
     # predict the model's firing rate
     predicted_rate = glm.predict(X) / bin_size
@@ -421,13 +436,17 @@ For convenience, for each model configuration lets store the corresponding basis
 
 <div class="render-user render-presenter">
 
-- Define a dictionary of bases that will compute the features for each of the following models: "position + speed", "position", "speed".
-- Define a dictionary containing the input time series that will be processed by each bases as a tuple.
+- Define a dictionary of bases for computing the features for each of the following models:
+  - "position + speed"
+  - "position"
+  - "speed"
+- Define a dictionary with the input time series that will be processed the bases as a tuple, i.e. `features = {"position": (position,), "speed": (speed,)...}`
 
 </div>
 
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
 
 bases = {
     "position": position_basis,
@@ -437,7 +456,7 @@ bases = {
 
 features = {
     "position": (position,),
-    "speed": (position,),
+    "speed": (speed,),
     "position + speed": (position, speed),
 }
 
@@ -452,6 +471,7 @@ To avoid overfitting, we would like to train the model on a subset of the data, 
 </div>
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
 
 train_iset = position.time_support[::2] # Taking every other epoch
 test_iset = position.time_support[1::2]
@@ -463,15 +483,19 @@ Now, let's construct our models, fit them and compute scores.
 
 - Loop over model configuration. 
 - Fit a GLM on the training set. 
-- Score on the test set, you can use `score_type="pseduo-r2-McFadden"` for a log-likelihood based score normalized between 0 and 1 (the higher the better).
+- Score on the test set. You can use `score_type="pseduo-r2-McFadden"` for a log-likelihood based score that is normalized between 0 and 1 (the higher the better).
+- Save the model scores in a dictionary.
 
 </div>
 
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
 
 scores = {}
 predicted_rates = {}
+models = {}
+
 glm_kwargs = dict(
     solver_kwargs={"tol": 1e-12},
     solver_name="LBFGS",
@@ -495,9 +519,8 @@ for m in bases:
         score_type="pseudo-r2-McFadden",
     )
 
-    print("4. Predicting rate")
-    predicted_rates[m] = glm.predict(X.restrict(test_iset)) / bin_size
-
+    # Store the model
+    models[m] = glm
 
 scores = pd.Series(scores)
 scores = scores.sort_values()
@@ -513,6 +536,7 @@ As we can see the model that ranks best includes both variables, while position 
 </div>
 
 ```{code-cell} ipython3
+:tag: [render-presenter]
 
 plt.figure(figsize=(5, 3))
 plt.barh(np.arange(len(scores)), scores)
@@ -523,4 +547,49 @@ plt.tight_layout()
 
 As an exercise, try to include the theta phase as a predictor, and try to model the interaction between theta phase and position in the place field.
 
+<div class="render-user render-presenter">
+
+- Finally, let's visualize each model.
+
+</div>
+
+```{code-cell} ipython3
+:tag: [render-all]
+
+m = "position"
+print(f"\n{'='*50}")
+print(f"  {m}")
+print(f"{'='*50}\n")
+
+X = bases[m].compute_features(*features[m])
+visualize_model_predictions(models[m], X)
+    
+```
+
+```{code-cell} ipython3
+:tag: [render-all]
+
+m = "speed"
+print(f"\n{'='*50}")
+print(f"  {m}")
+print(f"{'='*50}\n")
+
+X = bases[m].compute_features(*features[m])
+visualize_model_predictions(models[m], X)
+    
+```
+
+
+```{code-cell} ipython3
+:tag: [render-all]
+
+m = "position + speed"
+print(f"\n{'='*50}")
+print(f"  {m}")
+print(f"{'='*50}\n")
+
+X = bases[m].compute_features(*features[m])
+visualize_model_predictions(models[m], X)
+    
+```
 Note that you can use basis multiplication to model interactions.
