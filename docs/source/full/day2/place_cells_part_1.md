@@ -90,8 +90,6 @@ from sklearn import pipeline
 # shut down jax to numpy conversion warning
 nap.nap_config.suppress_conversion_warnings = True
 
-# during development, set this to a lower number so everything runs faster. 
-cv_folds = 5
 ```
 
 ## Pynapple
@@ -293,12 +291,13 @@ Later in this notebook, we'll show how to cross-validate across basis identity, 
 <div class="render-user render-presenter">
 
 - Create a separate basis object for each model input.
+- Provide a label for each basis ("position" and "speed")
 - Visualize the basis objects.
 </div>
 
 ```{code-cell} ipython3
-position_basis = nmo.basis.MSplineEval(n_basis_funcs=10)
-speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15)
+position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position")
+speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15, label="speed")
 workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
 ```
 
@@ -408,3 +407,120 @@ def visualize_model_predictions(glm, X):
     workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_pos, glm_speed);
 ```
 
+# Model Comparison
+
+Now that we have learned how to fit a model including both speed and position predictors, we would like compare the following models: 
+
+- A model including all predictors
+- A model including only position
+- A model including only speed
+
+To understand which of feature has more explanatory power (i.e. predicts best the neural activity).
+
+For convenience, for each model configuration lets store the corresponding basis and its input(s) in two dictionaries.
+
+<div class="render-user render-presenter">
+
+- Define a dictionary of bases that will compute the features for each of the following models: "position + speed", "position", "speed".
+- Define a dictionary containing the input time series that will be processed by each bases as a tuple.
+
+</div>
+
+
+```{code-cell} ipython3
+
+bases = {
+    "position": position_basis,
+    "speed": speed_basis,
+    "position + speed": position_basis + speed_basis,
+}
+
+features = {
+    "position": (position,),
+    "speed": (position,),
+    "position + speed": (position, speed),
+}
+
+```
+
+To avoid overfitting, we would like to train the model on a subset of the data, and score it on an independent subset. We will explore more sophisticated techniques later on, but for the purpose of this tutorial let's use 50% of the trials for training and 50% for scoring the model.
+
+<div class="render-user render-presenter">
+
+- Split the trial into a training and a test set, 50% each.
+
+</div>
+
+```{code-cell} ipython3
+
+train_iset = position.time_support[::2] # Taking every other epoch
+test_iset = position.time_support[1::2]
+```
+
+Now, let's construct our models, fit them and compute scores.
+
+<div class="render-user render-presenter">
+
+- Loop over model configuration. 
+- Fit a GLM on the training set. 
+- Score on the test set, you can use `score_type="pseduo-r2-McFadden"` for a log-likelihood based score normalized between 0 and 1 (the higher the better).
+
+</div>
+
+
+```{code-cell} ipython3
+
+scores = {}
+predicted_rates = {}
+glm_kwargs = dict(
+    solver_kwargs={"tol": 1e-12},
+    solver_name="LBFGS",
+)
+
+for m in bases:
+    print("1. Evaluating basis : ", m)
+    X = bases[m].compute_features(*features[m])
+
+    print("2. Fitting model : ", m)
+    glm = nmo.glm.PopulationGLM(**glm_kwargs)
+    glm.fit(
+        X.restrict(train_iset),
+        count.restrict(train_iset),
+    )
+
+    print("3. Scoring model : ", m)
+    scores[m] = glm.score(
+        X.restrict(test_iset),
+        count.restrict(test_iset),
+        score_type="pseudo-r2-McFadden",
+    )
+
+    print("4. Predicting rate")
+    predicted_rates[m] = glm.predict(X.restrict(test_iset)) / bin_size
+
+
+scores = pd.Series(scores)
+scores = scores.sort_values()
+scores
+```
+
+As we can see the model that ranks best includes both variables, while position seems to have more explanatory power. 
+
+<div class="render-user render-presenter">
+
+- Plot the scores as an error bar.
+
+</div>
+
+```{code-cell} ipython3
+
+plt.figure(figsize=(5, 3))
+plt.barh(np.arange(len(scores)), scores)
+plt.yticks(np.arange(len(scores)), scores.index)
+plt.xlabel("Pseudo r2")
+plt.tight_layout()
+```
+
+As an exercise, try to include the theta phase as a predictor, and try to model the interaction between theta phase and position in the place field.
+
+Note that you can use basis multiplication to model interactions.
