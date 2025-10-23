@@ -25,6 +25,7 @@ __all__ = [
     "plot_current_history_features",
     "current_injection_plot",
     "plot_basis_filter",
+    "plot_coupling_filters",
 ]
 
 
@@ -288,7 +289,7 @@ def animate_1d_convolution(tsd: nap.Tsd, kernel: NDArray, **kwargs):
 
 
 def plot_head_direction_tuning_model(
-    tuning_curves: pd.DataFrame,
+    tuning_curves: xarray.DataArray,
     spikes: nap.TsGroup,
     angle: nap.Tsd,
     predicted_firing_rate: Optional[nap.TsdFrame] = None,
@@ -306,7 +307,7 @@ def plot_head_direction_tuning_model(
     Parameters
     ----------
     tuning_curves:
-        The tuning curve dataframe.
+        The tuning curve xarray.
     spikes:
         The spike times.
     angle:
@@ -333,12 +334,12 @@ def plot_head_direction_tuning_model(
     index_keep = spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).index
 
     # filter neurons
-    tuning_curves = tuning_curves.loc[:, index_keep]
+    tuning_curves = tuning_curves.sel(unit=index_keep)
     if pref_ang is None:
-        pref_ang = tuning_curves.idxmax()
+        pref_ang = tuning_curves.idxmax(dim="Angle")
     pref_ang = pref_ang.loc[index_keep]
     spike_tsd = (
-        spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).to_tsd(pref_ang)
+        spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).to_tsd(pref_ang.values)
     )
 
     # plot raster and heading
@@ -417,9 +418,9 @@ def plot_head_direction_tuning_model(
             projection="polar",
         )
         ax.fill_between(
-            tuning_curves.iloc[:, neu_idx].index,
-            np.zeros(len(tuning_curves)),
-            tuning_curves.iloc[:, neu_idx].values,
+            tuning_curves.Angle.values,
+            np.zeros(tuning_curves.shape[1]),
+            tuning_curves[neu_idx].values,
             color=cmap(relative_color_levs[i]),
             alpha=0.5,
         )
@@ -440,9 +441,9 @@ def plot_head_direction_tuning_model(
                 projection="polar",
             )
             ax.fill_between(
-                model_tuning_curves.iloc[:, neu_idx].index,
-                np.zeros(len(model_tuning_curves)),
-                model_tuning_curves.iloc[:, neu_idx].values,
+                model_tuning_curves.Angle.values,
+                np.zeros(tuning_curves.shape[1]),
+                model_tuning_curves[neu_idx].values,
                 color=cmap(relative_color_levs[i]),
                 alpha=0.5,
             )
@@ -844,3 +845,101 @@ def plot_basis_filter(basis, model, current_history_duration_sec=0.2):
     axes[3].plot(time, np.matmul(kernel, model.coef_))
     axes[3].axhline(0, c="k", linestyle="--")
     axes[3].set(title="Learned linear filter", xlabel="Time (sec)")
+
+
+def plot_coupling_filters(
+    responses,
+    tuning,
+    cmap_name="seismic",
+    figsize=(10, 8),
+    fontsize=15,
+    alpha=0.5,
+    cmap_label="hsv",
+):
+    pref_ang = tuning.idxmax(dim="Angle")
+    cmap_tun = plt.colormaps[cmap_label]
+    color_tun = (pref_ang.values - pref_ang.values.min()) / (
+        pref_ang.values.max() - pref_ang.values.min()
+    )
+
+    # plot heatmap
+    sum_resp = np.sum(responses, axis=2)
+    # normalize by cols (for fixed receiver neuron, scale all responses
+    # so that the strongest peaks to 1)
+    sum_resp_n = (sum_resp.T / sum_resp.max(axis=1)).T
+
+    # scale to 0,1
+    color = -0.5 * (sum_resp_n - sum_resp_n.min()) / sum_resp_n.min()
+
+    cmap = plt.colormaps[cmap_name]
+    n_row, n_col, n_tp = responses.shape
+    time = np.arange(n_tp)
+    fig, axs = plt.subplots(n_row + 1, n_col + 1, figsize=figsize, sharey="row")
+    for rec, rec_resp in enumerate(responses):
+        for send, resp in enumerate(rec_resp):
+            axs[rec, send].plot(time, responses[rec, send], color="k")
+            axs[rec, send].spines["left"].set_visible(False)
+            axs[rec, send].spines["bottom"].set_visible(False)
+            axs[rec, send].set_xticks([])
+            axs[rec, send].set_yticks([])
+            axs[rec, send].axhline(0, color="k", lw=0.5)
+            if rec == n_row - 1:
+                axs[n_row, send].remove()  # Remove the original axis
+                axs[n_row, send] = fig.add_subplot(
+                    n_row + 1,
+                    n_col + 1,
+                    np.ravel_multi_index((n_row, send + 1), (n_row + 1, n_col + 1)),
+                    polar=True,
+                )  # Add new polar axis
+
+                axs[n_row, send].fill_between(
+                    tuning[send].Angle.values,
+                    np.zeros(tuning.shape[1]),
+                    tuning[send].values,
+                    color=cmap_tun(color_tun[send]),
+                    alpha=0.5,
+                )
+                axs[n_row, send].set_xticks([])
+                axs[n_row, send].set_yticks([])
+
+        axs[rec, send + 1].remove()  # Remove the original axis
+        axs[rec, send + 1] = fig.add_subplot(
+            n_row + 1,
+            n_col + 1,
+            np.ravel_multi_index((rec, send + 1), (n_row + 1, n_col + 1)) + 1,
+            polar=True,
+        )  # Add new polar axis
+
+        axs[rec, send + 1].fill_between(
+            tuning[rec].Angle.values,
+            np.zeros(tuning.shape[1]),
+            tuning[rec].values,
+            color=cmap_tun(color_tun[rec]),
+            alpha=0.5,
+        )
+        axs[rec, send + 1].set_xticks([])
+        axs[rec, send + 1].set_yticks([])
+    axs[rec + 1, send + 1].set_xticks([])
+    axs[rec + 1, send + 1].set_yticks([])
+    axs[rec + 1, send + 1].spines["left"].set_visible(False)
+    axs[rec + 1, send + 1].spines["bottom"].set_visible(False)
+    for rec, rec_resp in enumerate(responses):
+        for send, resp in enumerate(rec_resp):
+            xlim = axs[rec, send].get_xlim()
+            ylim = axs[rec, send].get_ylim()
+            rect = plt.Rectangle(
+                (xlim[0], ylim[0]),
+                xlim[1] - xlim[0],
+                ylim[1] - ylim[0],
+                alpha=alpha,
+                color=cmap(color[rec, send]),
+                zorder=1,
+            )
+            axs[rec, send].add_patch(rect)
+            axs[rec, send].set_xlim(xlim)
+            axs[rec, send].set_ylim(ylim)
+    axs[n_row // 2, 0].set_ylabel("receiver\n", fontsize=fontsize)
+    axs[n_row, n_col // 2].set_xlabel("\nsender", fontsize=fontsize)
+
+    plt.suptitle("Pairwise Interaction", fontsize=fontsize)
+    return fig
