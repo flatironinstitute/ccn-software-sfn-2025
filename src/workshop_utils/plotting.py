@@ -330,21 +330,23 @@ def plot_head_direction_tuning_model(
     fig:
         The figure.
     """
+    second_coord_name = list(tuning_curves.coords)[1]
     plot_ep = nap.IntervalSet(start, end)
     index_keep = spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).index
 
     # filter neurons
     tuning_curves = tuning_curves.sel(unit=index_keep)
     if pref_ang is None:
-        pref_ang = tuning_curves.idxmax(dim="Angle")
-    pref_ang = pref_ang.loc[index_keep]
-    spike_tsd = (
-        spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).to_tsd(pref_ang.values)
-    )
+        pref_ang = tuning_curves.idxmax(dim=second_coord_name)
+    pref_ang = pref_ang.sel(unit=index_keep)
+    # spike_tsd = (
+    #     spikes.restrict(plot_ep).getby_threshold("rate", threshold_hz).to_tsd(pref_ang.values)
+    # )
 
     # plot raster and heading
     cmap = plt.get_cmap(cmap_label)
-    unq_angles = np.unique(pref_ang.values)
+    #unq_angles = np.unique(pref_ang.values)
+    unq_angles = np.sort(pref_ang.values)
     n_subplots = len(unq_angles)
     relative_color_levs = (unq_angles - unq_angles[0]) / (
         unq_angles[-1] - unq_angles[0]
@@ -375,11 +377,10 @@ def plot_head_direction_tuning_model(
         (n_rows, n_subplots), loc=(1, 0), rowspan=1, colspan=n_subplots, fig=fig
     )
     ax.set_title("Neural Activity")
-    for i, ang in enumerate(unq_angles):
-        sel = spike_tsd.d == ang
+    for i, neu_idx in enumerate(pref_ang.unit.values[np.argsort(pref_ang).values]):
+        spike_tsd = spikes[neu_idx].restrict(plot_ep).fillna(i)
         ax.plot(
-            spike_tsd[sel].t,
-            np.ones(sel.sum()) * i,
+            spike_tsd,
             "|",
             color=cmap(relative_color_levs[i]),
             alpha=0.5,
@@ -408,8 +409,10 @@ def plot_head_direction_tuning_model(
         ax.set_xticklabels([8910, 8920, 8930, 8940, 8950, 8960])
         ax.set_xlim(0, 5000)
 
-    for i, ang in enumerate(unq_angles):
-        neu_idx = np.argsort(pref_ang)[i].unit
+    sorted_indices = pref_ang.argsort()
+    sorted_units = pref_ang.unit.values[sorted_indices]
+
+    for i, neu_idx in enumerate(sorted_units):
         ax = plt.subplot2grid(
             (n_rows, n_subplots),
             loc=(curr_row + i // n_subplots, i % n_subplots),
@@ -419,9 +422,9 @@ def plot_head_direction_tuning_model(
             projection="polar",
         )
         ax.fill_between(
-            tuning_curves.Angle.values,
+            tuning_curves[second_coord_name].values,
             np.zeros(tuning_curves.shape[1]),
-            tuning_curves[neu_idx].values,
+            tuning_curves.sel(unit=neu_idx).values,
             color=cmap(relative_color_levs[i]),
             alpha=0.5,
         )
@@ -442,7 +445,7 @@ def plot_head_direction_tuning_model(
                 projection="polar",
             )
             ax.fill_between(
-                model_tuning_curves.Angle.values,
+                tuning_curves[second_coord_name].values,
                 np.zeros(tuning_curves.shape[1]),
                 model_tuning_curves[neu_idx].values,
                 color=cmap(relative_color_levs[i]),
@@ -857,11 +860,13 @@ def plot_coupling_filters(
     alpha=0.5,
     cmap_label="hsv",
 ):
-    pref_ang = tuning.idxmax(dim="Angle")
+    second_coord_name = list(tuning.coords)[1]
+    pref_ang = tuning.idxmax(dim=second_coord_name)
     cmap_tun = plt.colormaps[cmap_label]
     color_tun = (pref_ang.values - pref_ang.values.min()) / (
         pref_ang.values.max() - pref_ang.values.min()
     )
+
 
     # plot heatmap
     sum_resp = np.sum(responses, axis=2)
@@ -894,7 +899,7 @@ def plot_coupling_filters(
                 )  # Add new polar axis
 
                 axs[n_row, send].fill_between(
-                    tuning[send].Angle.values,
+                    tuning[send].coords[second_coord_name].values,
                     np.zeros(tuning.shape[1]),
                     tuning[send].values,
                     color=cmap_tun(color_tun[send]),
@@ -912,7 +917,7 @@ def plot_coupling_filters(
         )  # Add new polar axis
 
         axs[rec, send + 1].fill_between(
-            tuning[rec].Angle.values,
+            tuning[rec].coords[second_coord_name].values,
             np.zeros(tuning.shape[1]),
             tuning[rec].values,
             color=cmap_tun(color_tun[rec]),
