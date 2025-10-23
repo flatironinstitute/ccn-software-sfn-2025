@@ -120,5 +120,5 @@ else:
     print("Try to resolve following the suggestions above.")
     print("If you encountered many installation errors, run [bold] pip install .[/bold] (note the dot!)")
     print("If you are unable to fix your setup yourself, please come to the setup help")
-    print("at the Flatiron Institute, 160 5th Ave, Room 418, from 2 to 5 pm on Wednesday, January 29,")
+    print("at the Omni San Diego Hotel, Gallery 1, from noon to 6pm on Wednesdsay, November 12 ")
     print("and show us the output of this command.")
