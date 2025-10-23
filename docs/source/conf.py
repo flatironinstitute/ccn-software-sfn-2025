@@ -6,6 +6,9 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import os
+import glob
+import pathlib
 project = 'CCN software workshop, SfN 2025'
 copyright = '2025, Edoardo Balzani, Billy Broderick, Sarah Jo Venditto, Guillaume Viejo'
 author = 'Edoardo Balzani, Billy Broderick, Sarah Jo Venditto, Guillaume Viejo'
@@ -79,3 +82,20 @@ html_theme_options = {
 }
 nb_execution_excludepatterns = ['*model_selection*', '*-users*', '*-presenters*']
 nb_execution_mode = "cache"
+
+if run_nb := os.environ.get("RUN_NB"):
+    all_nbs = glob.glob("full/**/*md", recursive=True)
+    print(all_nbs)
+    all_nbs = [pathlib.Path(n).stem for n in all_nbs]
+    print(all_nbs)
+    run_globs = [f"*{n}*" for n in run_nb.split(",")]
+    print(run_globs)
+    nb_execution_excludepatterns = [
+        f"*{n}*"
+        for n in all_nbs
+        if not any([glob.fnmatch.fnmatch(n, g) for g in run_globs])
+    ]
+    print(f"Excluding notebooks: {nb_execution_excludepatterns}")
+else:
+    nb_execution_excludepatterns = []
+    print("Running all notebooks, see CONTRIBUTING for details")
