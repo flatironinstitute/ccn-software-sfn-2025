@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.6
+    jupytext_version: 1.18.1
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -172,10 +172,6 @@ data["forward_ep"]
 
 All intervals in `forward_ep` occur in the middle of the session, while `rem` and `nrem` both contain sleep epochs that occur before and after exploration. 
 
-<div class="render-presenter">
-- sleep epochs are intertwined, forward epoch in middle
-</div>
-
 <div class="render-all"> 
     
 The following plot demonstrates how each of these labelled epochs are organized across the session.
@@ -267,23 +263,20 @@ ax.legend([l1[0], l2[0]], ["animal position", "forward run epochs"])
 
 This plot confirms that positions are only recorded while the animal is moving along the track. Additionally, it is clear that the intervals in `forward_ep` capture only perios when the animal's position is increasing, during forward runs.
 
-<div class="render-presenter">
-- position only while moving
-- `forward_ep` only captures forward runs
-</div>
-
 ## Restricting the data
 
 <div class="render-all">
     
-For the following exercises, we'll only focus on periods when the animal is awake. We'll start by pulling out `forward_ep` from the data.
+For the following exercises, we'll only focus on periods when the animal is awake and running. We can get this information from `position`.
+
+1. Save out the time support of position, which will give us the epoch during which the animal is awake
 
 </div>
 
 ```{code-cell} ipython3
-:tags: [render-all]
-
-forward_ep = data["forward_ep"]
+position = data["position"]
+awake_ep = position.time_support
+awake_ep
 ```
 
 <div class="render-all">
@@ -306,7 +299,8 @@ awake_ep =
 </div>
 
 ```{code-cell} ipython3
-awake_ep = forward_ep.time_span()
+forward_ep = data["forward_ep"]
+# awake_ep = forward_ep.time_span()
 ```
 
 <div class="render-all">
@@ -840,7 +834,7 @@ place_fields =
 </div>
 
 ```{code-cell} ipython3
-place_fields = nap.compute_1d_tuning_curves(good_spikes, position, 50)
+place_fields = nap.compute_tuning_curves(good_spikes, pos_good, 50, feature_names=["position"])
 ```
 
 <div class="render-all">
@@ -855,16 +849,10 @@ We can use a subplot array to visualize the place fields of many units simultane
 from scipy.ndimage import gaussian_filter1d
 
 # smooth the place fields so they look nice
-place_fields[:] = gaussian_filter1d(place_fields.values, 1, axis=0)
+place_fields.data = gaussian_filter1d(place_fields.data, 1, axis=-1)
 
-fig, axs = plt.subplots(10, 5, figsize=(12, 15), sharex=True, constrained_layout=True)
-for i, (f, fields) in enumerate(place_fields.iloc[:,:50].items()):
-    idx = np.unravel_index(i, axs.shape)
-    axs[idx].plot(fields)
-    axs[idx].set_title(f)
-
-fig.supylabel("Firing rate (Hz)")
-fig.supxlabel("Position (cm)")
+p = place_fields[25:50].plot(x="position", col="unit", col_wrap=5, size=1.2)
+p.set_ylabels("firing rate (Hz)")
 ```
 
 We can see spatial selectivity in each of the units; across the population, we have firing fields tiling the entire linear track. 
@@ -1020,7 +1008,7 @@ upsampled_pos =
 </div>
 
 ```{code-cell} ipython3
-upsampled_pos = position.interpolate(theta_phase)
+upsampled_pos = pos_good.restrict(position_ep).interpolate(theta_phase.restrict(position_ep))
 ```
 
 <div class="render-all">
@@ -1052,7 +1040,7 @@ feats =
 </div>
 
 ```{code-cell} ipython3
-feats = np.stack((upsampled_pos.values, theta_phase.values))
+feats = np.stack((upsampled_pos.values, theta_phase.restrict(position_ep).values))
 feats.shape
 ```
 
@@ -1070,10 +1058,10 @@ features =
 
 ```{code-cell} ipython3
 features = nap.TsdFrame(
-    t=theta_phase.t,
+    t=theta_phase.restrict(position_ep).t,
     d=np.transpose(feats),
     time_support=upsampled_pos.time_support,
-    columns=["position", "theta"],
+    columns=["position", "phase"],
 )
 ```
 
@@ -1095,7 +1083,7 @@ tuning_curves, [pos_x, phase_y] =
 </div>
 
 ```{code-cell} ipython3
-tuning_curves, [pos_x, phase_y] = nap.compute_2d_tuning_curves(good_spikes, features, 20)
+tuning_curves = nap.compute_tuning_curves(good_spikes, features, 20)
 ```
 
 <div class="render-all">
@@ -1107,14 +1095,16 @@ We can plot the first 50 2D tuning curves and visualize how many of these units 
 ```{code-cell} ipython3
 :tags: [render-all]
 
-fig, axs = plt.subplots(10, 5, figsize=(10, 15), sharex=True, constrained_layout=True)
-for i, f in enumerate(list(tuning_curves.keys())[:50]):
-    idx = np.unravel_index(i, axs.shape)
-    axs[idx].pcolormesh(pos_x, phase_y, tuning_curves[f])
-    axs[idx].set_title(f)
+# fig, axs = plt.subplots(10, 5, figsize=(10, 15), sharex=True, constrained_layout=True)
+# for i, f in enumerate(list(tuning_curves.keys())[:50]):
+#     idx = np.unravel_index(i, axs.shape)
+#     axs[idx].pcolormesh(pos_x, phase_y, tuning_curves[f])
+#     axs[idx].set_title(f)
 
-fig.supylabel("Phase (rad)")
-fig.supxlabel("Position (cm)");
+# fig.supylabel("Phase (rad)")
+# fig.supxlabel("Position (cm)");
+
+tuning_curves[:50].plot(x="position", y="phase", col="unit", col_wrap=5, size=1.5, aspect=1.5)
 ```
 
 Many of the units display a negative relationship between position and phase, characteristic of phase precession.
@@ -1192,9 +1182,9 @@ run_train = forward_ep.set_diff(ex_run_ep)
 # get position of training set
 position_train = position.restrict(run_train)
 # compute place fields using training set
-place_fields = nap.compute_1d_tuning_curves(spikes, position_train, nb_bins=50)
+place_fields = nap.compute_tuning_curves(spikes, position_train, bins=50, feature_names=["position"])
 # smooth place fields
-place_fields[:] = gaussian_filter1d(place_fields.values, 1, axis=0)
+place_fields.data = gaussian_filter1d(place_fields.data, 1, axis=-1)
 ```
 
 ### Run 1D decoder
@@ -1242,7 +1232,7 @@ decoded_position, decoded_prob =
 </div>
 
 ```{code-cell} ipython3
-decoded_position, decoded_prob = nap.decode_1d(place_fields, spikes, ex_run_ep, 0.04)
+decoded_position, decoded_prob = nap.decode_bayes(place_fields, spikes, ex_run_ep, 0.04)
 ```
 
 <div class="render-all">
@@ -1255,7 +1245,7 @@ Let's plot decoded position with the animal's true position. We'll overlay them 
 :tags: [render-all]
 
 fig,ax = plt.subplots(figsize=(10, 4), constrained_layout=True)
-c = ax.pcolormesh(decoded_position.index,place_fields.index,np.transpose(decoded_prob))
+c = ax.pcolormesh(decoded_position.index,place_fields.position,np.transpose(decoded_prob))
 ax.plot(decoded_position, "--", color="red", label="decoded position")
 ax.plot(ex_position, color="red", label="true position")
 ax.legend()
@@ -1345,7 +1335,7 @@ smth_decoded_position, smth_decoded_prob =
 </div>
 
 ```{code-cell} ipython3
-smth_decoded_position, smth_decoded_prob = nap.decode_1d(place_fields, smth_counts, ex_run_ep, bin_size=0.2)
+smth_decoded_position, smth_decoded_prob = nap.decode_bayes(place_fields, smth_counts, ex_run_ep, bin_size=0.2)
 ```
 
 <div class="render-all">
@@ -1358,7 +1348,7 @@ Let's plot the results.
 :tags: [render-all]
 
 fig,ax = plt.subplots(figsize=(10, 4), constrained_layout=True)
-c = ax.pcolormesh(smth_decoded_position.index,place_fields.index,np.transpose(smth_decoded_prob))
+c = ax.pcolormesh(smth_decoded_position.index,place_fields.position,np.transpose(smth_decoded_prob))
 ax.plot(smth_decoded_position, "--", color="red", label="decoded position")
 ax.plot(ex_position, color="red", label="true position")
 ax.legend()
@@ -1418,7 +1408,7 @@ smth_decoded_position, smth_decoded_prob = nap.decode_1d(place_fields, smth_coun
 ```{code-cell} ipython3
 counts = spikes.restrict(ex_run_ep).count(0.01)
 smth_counts = counts.convolve(np.ones(5))
-smth_decoded_position, smth_decoded_prob = nap.decode_1d(place_fields, smth_counts, ex_run_ep, bin_size=0.05)
+smth_decoded_position, smth_decoded_prob = nap.decode_bayes(place_fields, smth_counts, ex_run_ep, bin_size=0.05)
 ```
 
 <div class="render-all">
