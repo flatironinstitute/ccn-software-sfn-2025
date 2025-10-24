@@ -63,7 +63,7 @@ for md in (repo_dir / "docs/source/full").glob("*/*md"):
                 presenter_text.append(t)
         else:
             presenter_text.append(t)
-    presenter_text = "\n".join(presenter_text)
+    presenter_text = "\n\n".join(presenter_text)
     presenter_text = presenter_text.replace(title, title + PRESENTER_NB_EXPLAIN.format(local_path))
     presenter_text = presenter_text.replace(ipynb, presenter_ipynb)
     presenter_md.write_text(presenter_text)
