@@ -89,7 +89,6 @@ from sklearn import pipeline
 
 # shut down jax to numpy conversion warning
 nap.nap_config.suppress_conversion_warnings = True
-
 ```
 
 ## Pynapple
@@ -444,7 +443,6 @@ For convenience, for each model configuration lets store the corresponding basis
 
 </div>
 
-
 ```{code-cell} ipython3
 :tag: [render-presenter]
 
@@ -459,7 +457,6 @@ features = {
     "speed": (speed,),
     "position + speed": (position, speed),
 }
-
 ```
 
 To avoid overfitting, we would like to train the model on a subset of the data, and score it on an independent subset. We will explore more sophisticated techniques later on, but for the purpose of this tutorial let's use 50% of the trials for training and 50% for scoring the model.
@@ -487,7 +484,6 @@ Now, let's construct our models, fit them and compute scores.
 - Save the model scores in a dictionary.
 
 </div>
-
 
 ```{code-cell} ipython3
 :tag: [render-presenter]
@@ -579,7 +575,6 @@ visualize_model_predictions(models[m], X)
     
 ```
 
-
 ```{code-cell} ipython3
 :tag: [render-all]
 
@@ -592,86 +587,10 @@ X = bases[m].compute_features(*features[m])
 visualize_model_predictions(models[m], X)
     
 ```
+
 Note that you can use basis multiplication to model interactions.
 
 
----
-jupytext:
-  text_representation:
-    extension: .md
-    format_name: myst
-    format_version: 0.13
-    jupytext_version: 1.18.1
-kernelspec:
-  display_name: Python 3 (ipykernel)
-  language: python
-  name: python3
----
-
-```{code-cell} ipython3
-:tags: [hide-input, render-all]
-
-%load_ext autoreload
-%autoreload 2
-
-%matplotlib inline
-import warnings
-
-warnings.filterwarnings(
-    "ignore",
-    message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
-    category=UserWarning,
-)
-
-warnings.filterwarnings(
-    "ignore",
-    message="Ignoring cached namespace 'core'",
-    category=UserWarning,
-)
-
-warnings.filterwarnings(
-    "ignore",
-    message=(
-        "invalid value encountered in div "
-    ),
-    category=RuntimeWarning,
-)
-```
-
-:::{admonition} Download
-:class: important render-all
-
-This notebook can be downloaded as **{nb-download}`place_cells_part_2.ipynb`**. See the button at the top right to download as markdown or pdf.
-
-:::
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import pynapple as nap
-
-import nemos as nmo
-
-# some helper plotting functions
-from nemos import _documentation_utils as doc_plots
-import workshop_utils
-
-# configure plots some
-plt.style.use(nmo.styles.plot_style)
-
-import workshop_utils
-
-from sklearn import model_selection
-from sklearn import pipeline
-
-# shut down jax to numpy conversion warning
-nap.nap_config.suppress_conversion_warnings = True
-
-cv_folds = 5
-```
 
 # Model selection - Part 2
 
@@ -729,6 +648,7 @@ param_grid = {
 </div>
 
 ```{code-cell} ipython3
+cv_folds = 5
 cv = model_selection.GridSearchCV(glm, param_grid, cv=cv_folds)
 cv
 ```
@@ -821,7 +741,6 @@ If the basis has more than one component (for example, if it is the addition of 
 
 **Case 1)** One input per component:
 
-
 ```{code-cell} ipython3
 # generate a composite basis
 basis_2d = nmo.basis.MSplineEval(5) +  nmo.basis.MSplineEval(5)
@@ -850,9 +769,7 @@ x, y = np.random.randn(10, 2), np.random.randn(10, 3)
 X = np.concatenate([x, y], axis=1)
 
 res = basis_2d.transform(X)
-
 ```
-
 
 <div class="render-user render-presenter">
 
@@ -861,7 +778,6 @@ res = basis_2d.transform(X)
 </div>
 
 ```{code-cell} ipython3
-
 # Set the expected input shape instead, different options:
 
 # array
@@ -1077,7 +993,6 @@ Let's see how to circumvent this with a neat basis trick.
 
 </div>
 
-
 ```{code-cell} ipython3
 # this function creates an empty array (n_sample, 0)
 def func(x):
@@ -1167,5 +1082,3 @@ Various combinations of features can lead to different results. Feel free to exp
 The data in this tutorial comes from [Grosmark, Andres D., and György Buzsáki. "Diversity in neural firing dynamics supports both rigid and learned hippocampal sequences." Science 351.6280 (2016): 1440-1443](https://www.science.org/doi/full/10.1126/science.aad1935).
 
 </div>
-
-
