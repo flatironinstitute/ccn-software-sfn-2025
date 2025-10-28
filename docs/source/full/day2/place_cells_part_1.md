@@ -421,7 +421,7 @@ def visualize_model_predictions(glm, X):
     workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_pos, glm_speed);
 ```
 
-## NeMoS advanced: Model Comparison
+## Model Comparison
 
 Now that we have learned how to fit a model including both speed and position predictors, we would like compare the following models: 
 
@@ -592,7 +592,7 @@ Note that you can use basis multiplication to model interactions.
 
 
 
-# Model selection - Part 2
+# NeMoS advanced: Model selection
 
 <div class="render-all">
 
