@@ -1103,7 +1103,7 @@ print(f"Model coefficients shape: {model.coef_.shape}")
 
 Predict the rate (counts are already sorted by tuning prefs)
 
-**Question: Can you:**11
+**Question: Can you:**
 - Predict the firing rate of each neuron? Call it `predicted_firing_rate`.
 - Convert the rate from spike/bin to spike/sec?
 
