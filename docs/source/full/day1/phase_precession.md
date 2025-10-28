@@ -78,23 +78,6 @@ The full dataset for this study can be accessed on [DANDI](https://dandiarchive.
 
 If you ran the workshop setup script, you should have this file downloaded already. If not, the function we'll use to fetch it will download it for you. This function is called `fetch_data`, and can be imported from the `workshop_utils` module.
 
-<div class="render-user render-presenter">
-First we'll fetch the relevant data set for this exercise.
-
-- Manuscript: [Diversity in neural firing dynamics supports both rigid and learned hippocampal sequences](https://www.science.org/doi/10.1126/science.aad1935)
-- Full data source: [DANDI](https://dandiarchive.org/dandiset/000044/0.210812.1516)
-</div>
-
-<div class="render-user render-presenter">
-```{code-cell} ipython3
-# fetch file path
-path = workshop_utils.fetch_data("Achilles_10252013_EEG.nwb")
-# load data with pynapple
-data = nap.load_file(path)
-print(data)
-```
-</div>
-
 ```{code-cell} ipython3
 # fetch file path
 path = workshop_utils.fetch_data("Achilles_10252013_EEG.nwb")
@@ -269,7 +252,7 @@ This plot confirms that positions are only recorded while the animal is moving a
     
 For the following exercises, we'll only focus on periods when the animal is awake and running. We can get this information from `position`.
 
-1. Save out the time support of position, which will give us the epoch during which the animal is awake
+**1. Save out the time support of position, which will give us the epoch during which the animal is awake.**
 
 </div>
 
@@ -281,33 +264,29 @@ awake_ep
 
 <div class="render-all">
 
-Since `forward_ep` is formatted as discontinuous epochs when the animal is running down the track, we will want two additional IntervalSets to describe the exploration period:
+You may have noticed many `nan` values for position during the awake period; these values correspond to when the animals is at rest. We also want, then, epochs describing periods when the animal is running. Some of this information is saved already in `forward_ep`. 
 
-1. An IntervalSet with a single interval for the entire awake period
-2. An IntervalSet containing the intervals at which the animal is at rest.
-
-We can derive both of these from `forward_ep`. 
-
-For the first, we can use the `IntervalSet` method `time_span`, which will give the total epoch spanning all the intervals in `forward_ep`.
-
+**2. Confirm that when restricting position to `forward_ep`, there are no `nan` values in position.**
 </div>
 
 <div class="render-user">
 ```{code-cell} ipython3
-awake_ep =
+forward_ep =
 ```
 </div>
 
 ```{code-cell} ipython3
 forward_ep = data["forward_ep"]
-# awake_ep = forward_ep.time_span()
+np.any(np.isnan(position.restrict(forward_ep)))
 ```
 
 <div class="render-all">
 
-For the second, we know that the animal is likely at rest when there is no recorded position (i.e. the position is NaN). We can create this `IntervalSet`, then, using the following steps.
+What if we want *all* movement epochs, not just forward runs? We can derive this from `position` by dropping all `nan` values and recomputing the time support. 
 
-1. Drop `NaN` values from the position to grab only points where position is defined.
+**3. Extract time intervals from `position` using the `dropna` and `find_support` methods.**
+   - The first input argument, `min_gap`, sets the minumum separation between adjacent intervals in order to be split
+   - Here, use `min_gap` of 1 s
 
 </div>
 
@@ -321,80 +300,41 @@ pos_good =
 ```{code-cell} ipython3
 # drop nan values
 pos_good = data["position"].dropna()
-pos_good
+run_ep = pos_good.find_support(1)
+run_ep
 ```
 
 <div class="render-all">
 
-2. Extract time intervals from `pos_good` using the `find_support` method
-   - The first input argument, `min_gap`, sets the minumum separation between adjacent intervals in order to be split
-   - Here, use `min_gap` of 1 s
+Finally, we can use `run_ep` and `forward_ep` to extract epochs when the animal is running backwards.
+
+**4. Use the `IntervalSet` method `set_diff` to get `backward_ep` from `run_ep` and `forward_ep`**
 
 </div>
 
 <div class="render-user">
 ```{code-cell} ipython3
-# extract time support
-position_ep = 
+backward_ep = 
 ```
 </div>
 
 ```{code-cell} ipython3
-# extract time support
-position_ep = pos_good.find_support(1)
-position_ep
+backward_ep = run_ep.set_diff(forward_ep)
+backward_ep
 ```
-
-<div class="render-all">
-
-3. Define resting epochs as the set difference between `awake_ep` and `position_ep`, using the `set_diff` method.
-   - `set_diff` should be applied to `awake_ep`, not the other way around, such that intervals in `position_ep` are subtracted out of `awake_ep`
-
-</div>
-
-<div class="render-user">
-```{code-cell} ipython3
-rest_ep = 
-```
-</div>
-
-```{code-cell} ipython3
-rest_ep = awake_ep.set_diff(position_ep)
-rest_ep
-```
-
-:::{admonition} Note
-:class: note render-all
-
-Performing `set_diff` between `awake_ep` and `forward_ep` will *not* give us purely resting epochs, since these intervals will also include times when the animal is moving *backwards* across the linear track.
-
-:::
 
 <div class="render-all">
     
-Now, when extracting the LFP, spikes, and position, we can use `restrict()` with `awake_ep` to restrict the data to our region of interest.
+Now, when extracting the LFP, spikes, and position, we can use `restrict()` with any of these epochs to restrict the data to our movement period of interest.
 
 </div>
 
 ```{code-cell} ipython3
 :tags: [render-all]
 
-lfp_run = data["eeg"][:,0].restrict(awake_ep)
+lfp = data["eeg"][:,0].restrict(awake_ep)
 spikes = data["units"].restrict(awake_ep)
 position = data["position"].restrict(awake_ep)
-```
-
-<div class="render-all">
-    
-For visualization, we'll look at a single run down the linear track. For a good example, we'll start by looking at run 10 (python index 9). Furthermore, we'll add two seconds on the end of the run to additionally visualize a period of rest following the run.
-    
-</div>
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-ex_run_ep = nap.IntervalSet(start=forward_ep[9].start, end=forward_ep[9].end+2)
-ex_run_ep
 ```
 
 ***
@@ -403,21 +343,22 @@ ex_run_ep
 
 <div class="render-all">
 
-To get a sense of what the LFP looks like while the animal runs down the linear track, we can plot each variable, `lfp_run` and `position`, side-by-side. 
+To get a sense of what the LFP looks like while the animal runs down the linear track, we can plot each variable, `lfp_run` and `position`, side-by-side. Let's do this for an example run; specifically, we'll look at forward run 9.
 
-We'll want to further restrict each variable to our run of interest, `ex_run_ep`.
-
+**1. Create an interval set for forward run 9, adding 2 seconds to the end of the interval. Restrict LFP and position to this epoch.**
 </div>
 
 <div class="render-user">
 ```{code-cell} ipython3
+ex_run_ep =
 ex_lfp_run = 
 ex_position = 
 ```
 </div>
 
 ```{code-cell} ipython3
-ex_lfp_run = lfp_run.restrict(ex_run_ep)
+ex_run_ep = nap.IntervalSet(start=forward_ep[9].start, end=forward_ep[9].end+2)
+ex_lfp_run = lfp.restrict(ex_run_ep)
 ex_position = position.restrict(ex_run_ep)
 ```
 
@@ -446,10 +387,6 @@ axs[1].set_xlabel("Time (s)");
 
 As we would expect, there is a strong theta oscillation dominating the LFP while the animal runs down the track. This oscillation is weaker after the run is complete.
 
-<div class="render-presenter">
-- theta while running, weaker after run is complete
-</div>
-
 ***
 
 ## Getting the Wavelet Decomposition
@@ -463,22 +400,11 @@ To illustrate this further, we'll perform a wavelet decomposition on the LFP tra
 We will also supply the following optional arguments:
 - `fs`: the sampling rate of `sig`
 
-</div>
-
 A [continuous wavelet transform](https://en.wikipedia.org/wiki/Continuous_wavelet_transform) decomposes a signal into a set of [wavelets](https://en.wikipedia.org/wiki/Wavelet), in this case [Morlet wavelets](https://en.wikipedia.org/wiki/Morlet_wavelet), that span both frequency and time. You can think of the wavelet transform as a cross-correlation between the signal and each wavelet, giving the similarity between the signal and various frequency components at each time point of the signal. Similar to a Fourier transform, this gives us an estimate of what frequencies are dominating a signal. Unlike the Fourier tranform, however, the wavelet transform gives us this estimate as a function of time.
 
 We must define the frequency set that we'd like to use for our decomposition. We can do this with the numpy function `np.geomspace`, which returns numbers evenly spaced on a log scale. We pass the lower frequency, the upper frequency, and number of samples as positional arguments.
 
-<div class="render-presenter">
-Wavelet transform:
-- continuous wavelet transform decomposes signal into Morlet wavelets spanning frequency and time
-- like cross-correlation between signal and wavelets, giving similarity between the signal and a short oscillating wavelet at different points in time
-- give estimate fo what frequencies are dominating a signal
-- unlike FFT, gives estimate as a function of time
-</div>
-
-<div class="render-user render-presenter">
-1. Define 100 log-spaced samples between 5 and 200 Hz using `np.geomspace`
+**1. Define 100 log-spaced samples between 5 and 200 Hz using `np.geomspace`**
 </div>
 
 <div class="render-user">
@@ -493,10 +419,11 @@ freqs =
 freqs = np.geomspace(5, 200, 100)
 ```
 
+<div class="render-all">
+
 We can now compute the wavelet transform on our LFP data during the example run using `nap.compute_wavelet_trasform` by passing both `ex_lfp_run` and `freqs`. We'll also pass the optional argument `fs`, which is known to be 1250Hz from the study methods.
 
-<div class="render-user render-presenter">
-2. Compute the wavelet transform, supplying the known sampling rate of 1250 Hz.
+**2. Compute the wavelet transform, supplying the known sampling rate of 1250 Hz.**
 </div>
 
 <div class="render-user">  
@@ -523,13 +450,9 @@ If `fs` is not provided, it can be inferred from the time series `rate` attribut
 print(ex_lfp_run.rate)
 ```
 
-The inferred rate is close to the true sampling rate, but it can introduce a small floating-point error. Therefore, it is better to supply the true sampling rate when it is known.
-
-<div class="render-presenter">
-- note floating point error
-</div>
-
 <div class="render-all">
+    
+The inferred rate is close to the true sampling rate, but it can introduce a small floating-point error. Therefore, it is better to supply the true sampling rate when it is known.
 
 We can visualize the results by plotting a heat map of the calculated wavelet scalogram.
 
@@ -556,10 +479,10 @@ ax.set_ylabel("Position (cm)")
 ax.legend([p1[0], p2[0]],["raw LFP","animal position"])
 ```
 
-As we would expect, there is a strong presence of theta in the 6-12Hz frequency band while the animal runs down the track, which dampens during rest.
+<div class="render-all">
+    
+What you should see isa strong presence of theta in the 6-12Hz frequency band while the animal runs down the track, which dampens during rest.
 
-<div class="render-presenter">
-- strong amplitude in 6-12Hz range while animal is running, dampens after
 </div>
 
 ***
@@ -573,7 +496,7 @@ As we would expect, there is a strong presence of theta in the 6-12Hz frequency 
 ```{code-cell} ipython3
 :tags: [render-all]
 
-fft_amp = np.abs(nap.compute_fft(lfp_run, fs=sample_rate, norm=True))
+fft_amp = np.abs(nap.compute_fft(lfp, fs=sample_rate, norm=True))
 fig, ax = plt.subplots(figsize=(10,4), constrained_layout=True)
 ax.plot(fft_amp[(fft_amp.index >= 1) & (fft_amp.index <= 100)])
 ax.axvspan(6, 12, color="red", alpha=0.1, label = "theta band")
@@ -590,7 +513,7 @@ fig.legend(loc="center")
 ```{code-cell} ipython3
 :tags: [render-all]
 
-power = nap.compute_power_spectral_density(lfp_run, fs=sample_rate)
+power = nap.compute_power_spectral_density(lfp, fs=sample_rate)
 fig, ax = plt.subplots(figsize=(10,4), constrained_layout=True)
 ax.plot(power[(power.index >= 1) & (power.index <= 100)])
 ax.axvspan(6, 12, color="red", alpha=0.1, label = "theta band")
@@ -603,36 +526,30 @@ fig.legend(loc="center")
 
 <div class="render-all">
 
-For the remaining exercises, we'll reduce our example epoch to the portion when the animal is running down the linear track.
+For the remaining exercises, we'll reduce our example epoch to the portion when the animal is running forward along the linear track.
 
+**1. Restrict the LFP and position to epochs when the animal is running forward.**
 </div>
 
 ```{code-cell} ipython3
-:tags: [render-all]
-
-ex_run_ep = forward_ep[9]
-ex_lfp_run = lfp_run.restrict(ex_run_ep)
-ex_position = position.restrict(ex_run_ep)
+lfp_run = lfp.restrict(forward_ep)
+position_run = position.restrict(forward_ep)
 ```
 
-We can extract the theta oscillation by applying a bandpass filter on the raw LFP. To do this, we use the pynapple function `nap.apply_bandpass_filter`, which takes the time series as the first argument and the frequency cutoffs as the second argument. Similarly to `nap.compute_wavelet_transorm`, we can optinally pass the sampling frequency keyword argument `fs`.
+<div class="render-all">
 
-Conveniently, this function will recognize and handle splits in the epoched data (i.e. applying the filtering separately to discontinuous epochs), so we don't have to worry about passing signals that have been split in time.
-
-<div class="render-user render-presenter">
-We can filter our signal for theta by using `nap.apply_bandpass_filter`, which requires following arguments:
+We can extract the theta oscillation by applying a bandpass filter on the raw LFP. To do this, we use the pynapple function `nap.apply_bandpass_filter`, which takes the the following arguments:
 - `data`: the signal to be filtered; a `Tsd`, `TsdFrame`, or `TsdTensor`
 - `cutoff`: tuple containing the frequency cutoffs, (lower frequency, upper frequency)
+
+Conveniently, this function will recognize and handle splits in the epoched data (i.e. applying the filtering separately to discontinuous epochs), so we don't have to worry about passing signals that have been split in time.
 
 Same as before, we'll pass the optional argument:
 - `fs`: the sampling rate of `data` in Hz
 
-Using this function, filter `lfp_run` within a 6-12 Hz range.
+**2. Using `nap.apply_bandpass_filter`, filter the LFP for theta within a 6-12 Hz range.**
 </div>
 
-<div class="render-presenter">
-- note handling of disconinuous data
-</div>
 
 <div class="render-user">   
 ```{code-cell} ipython3
@@ -669,7 +586,7 @@ plt.legend();
 
 In order to examine phase precession in place cells, we need to extract the phase of theta from the filtered signal. We can do this by taking the angle of the [Hilbert transform](https://en.wikipedia.org/wiki/Hilbert_transform).
 
-The `signal` module of `scipy` includes a function to perform the Hilbert transform, after which we can use the numpy function `np.angle` to extract the angle.
+**1. Use `scipy.signal.hilbert` to perform the Hilbert transform, and  the numpy function `np.angle` to extract the angle. Convert the output angle to a [0, 2pi] range, and store the result in a `Tsd` object.**
 
 </div>
 
@@ -681,33 +598,9 @@ phase =
 
 ```{code-cell} ipython3
 phase = np.angle(signal.hilbert(theta_band)) # compute phase with hilbert transform
-phase
-```
-
-<div class="render-all">
-
-The output angle will be in the range $-\pi$ to $\pi$. Converting this to a $0$ to $2\pi$ range instead, by adding $2\pi$ to negative angles, will make later visualization more interpretable.
-
-</div>
-
-```{code-cell} ipython3
 phase[phase < 0] += 2 * np.pi # wrap to [0,2pi]
-```
-
-<div class="render-all">
-
-Finally, we need to turn this into a `Tsd` to make full use of pynapple's conveniences! Do this using the time index of `theta_band`. 
-
-</div>
-
-<div class="render-user">  
-```{code-cell} ipython3
-theta_phase = 
-```
-</div>
-
-```{code-cell} ipython3
 theta_phase = nap.Tsd(t=theta_band.t, d=phase)
+theta_phase
 ```
 
 <div class="render-all">
@@ -758,20 +651,16 @@ ax.legend([p1[0],p2[0]],["theta phase","filtered LFP"])
 
 We can see that cycle "resets" (i.e. goes from $2\pi$ to $0$) at peaks of the theta oscillation.
 
-<div class="render-presenter">
-- note cycle reset
-</div>
-
 ***
 
 ## Computing 1D tuning curves: place fields
 
 <div class="render-all">
 
-In order to identify phase precession in single units, we need to know their place selectivity. We can find place firing preferences of each unit by using the function `nap.compute_1d_tuning_curves`. This function has the following required inputs:
+In order to identify phase precession in single units, we need to know their place selectivity. We can find place firing preferences of each unit by using the function `nap.compute_tuning_curves`. This function has the following required inputs:
 - `group`: a `TsGroup` of units for which tuning curves are computed
 - `feature`: a `Tsd` or single-column `TsdFrame` of the feature over which tuning curves are computed (e.g. position)
-- `nb_bins`: the number of bins in which to split the feature values for the tuning curve
+- `bins`: the number of bins in which to split the feature values for the tuning curve
 
 First, we'll filter for units that fire at least 1 Hz and at most 10 Hz when the animal is running forward along the linear track. This will select for units that are active during our window of interest and eliminate putative interneurons (i.e. fast-firing inhibitory neurons that don't usually have place selectivity). 
 
