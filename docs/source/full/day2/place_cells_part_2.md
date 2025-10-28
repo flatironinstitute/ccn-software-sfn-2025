@@ -387,6 +387,7 @@ param_grid = {
 <div class="render-user render-presenter">
 
 - Cross-validate as before:
+
 </div>
 
 ```{code-cell} ipython3
@@ -397,6 +398,7 @@ cv.fit(transformer_input, count)
 <div class="render-user render-presenter">
 
 - Investigate results:
+
 </div>
 
 ```{code-cell} ipython3
@@ -408,6 +410,7 @@ scikit-learn does not cache every model that it runs (that could get prohibitive
 <div class="render-user render-presenter">
 
 - Can easily grab the best estimator, the pipeline that did the best:
+
 </div>
 
 ```{code-cell} ipython3
@@ -511,6 +514,7 @@ cv_df = pd.DataFrame(cv.cv_results_)
 # let's just plot a minimal subset of cols
 cv_df[["param_basis__basis", "mean_test_score", "rank_test_score"]]
 ```
+
 Unsurprisingly, position comes up as the predictor with the larger explnatory power and speed adds marginal benefits.
 
 For the next project, you can use all the tools showcased here to find a better encoding model model for these hyppocampal neurons. 
@@ -539,6 +543,4 @@ The data in this tutorial comes from [Grosmark, Andres D., and György Buzsáki.
 
 </div>
 
-```{code-cell} ipython3
 
-```
