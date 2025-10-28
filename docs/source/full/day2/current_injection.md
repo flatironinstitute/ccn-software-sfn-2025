@@ -1136,7 +1136,7 @@ train sets, training the model on one subset of the data and testing it on
 another to test the model's generalizability. We'll see a simple version of this
 in the [next notebook](./head_direction.md), and a more streamlined version,
 using `scikit-learn`'s pipelining and cross-validation machinery, will be shown
-in the [final notebook](./place_cells.md).
+in the [final notebook](./place_cells_part_2).
 
 ### Finishing up
 
@@ -1203,7 +1203,7 @@ We could try adding the following inputs to the model, alone or together:
   current and the firing rate. Can we improve that somehow? We saw that adding
   the current history changed this relationship, but we can also change it
   without including the history by using an `Eval` basis object. We'll see how
-  to do this in more detail in the [final notebook](./place_cells.md)
+  to do this in more detail in the [final notebook](./place_cells_part_2)
 
 <div class="render-all">
 
