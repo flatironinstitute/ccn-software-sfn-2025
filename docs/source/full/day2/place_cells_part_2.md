@@ -59,7 +59,7 @@ In our previous analysis of the place field hyppocampal dataset we compared mult
 - Learn how to use NeMoS objects with [scikit-learn](https://scikit-learn.org/) for cross-validation
 - Learn how to use NeMoS objects with scikit-learn [pipelines](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)
 - Learn how to use cross-validation to perform model and feature selection
-- 
+
 </div>
 
 ## Scikit-learn
@@ -176,6 +176,7 @@ position_basis.transform(position)
 <div class="render-user render-presenter">
 
 - Transformers only accept 2d inputs, whereas nemos basis objects can accept inputs of any dimensionality.
+- In order to use a basis as a transformer, you'll need to concatenate all your input in a single 2D array.
 
 </div>
 
@@ -187,13 +188,14 @@ position_basis.transform(position[:, np.newaxis])
 
 <div class="render-user render-presenter">
 
-- If the basis is composite (for example, the addition of two 1D bases), the transformer will expect a shape of `(n_sampels, 1)` each 1D component. If that's not the case, you need to call `set_input_shape`:
+- If the basis is composite (for example, the addition of two 1D bases), the transformer will expect an input of shape `(n_sampels, 1)` per each component. 
 
 </div>
 
 If the basis has more than one component (for example, if it is the addition of two 1D bases), the transformer will expect an input shape of `(n_sampels, 1)` pre component. If that's not the case, you'll provide a different input shape by calling `set_input_shape`.
 
-**Option 1)** One input per component:
+**Case 1)** One input per component:
+
 
 ```{code-cell} ipython3
 # generate a composite basis
@@ -206,24 +208,36 @@ X = np.concatenate([x, y], axis=1)
 result = basis_2d.transform(X)
 ```
 
-**Option 2)** Multiple input per component.
+**Case 2)** Multiple input per component.
 
 <div class="render-user render-presenter">
 
-- Then you can call transform on the 2d input as expected.
+- If one or more basis process multiple inputs (multiple columns of the 2D array), trying to call the `tranform` method directly will lead to an error. 
+- This is because the basis doesn't know which component should process which column. 
+
 </div>
 
 ```{code-cell} ipython3
+:tags: [raises-exception]
+
 # Assume 2 input for the first component and 3 for the second.
 x, y = np.random.randn(10, 2), np.random.randn(10, 3)
 X = np.concatenate([x, y], axis=1)
-try:
-    basis_2d.transform(X)
-except Exception as e:
-    print("Exception Raised:")
-    print(repr(e))
 
-# Set the expected input shape instead.
+res = basis_2d.transform(X)
+
+```
+
+
+<div class="render-user render-presenter">
+
+- To prevent that, use `set_input_shape` to define how many inputs each component should process.
+
+</div>
+
+```{code-cell} ipython3
+
+# Set the expected input shape instead, different options:
 
 # array
 res1 = basis_2d.set_input_shape(x, y).transform(X)
@@ -235,15 +249,14 @@ res3 = basis_2d.set_input_shape((2,), (3,)).transform(X)
 
 <div class="render-all">
 
-- You can, equivalently, call `compute_features` *before* turning the basis into a transformer. Then we cache the shape for future use:
+- Let's now create the composite basis for speed and position.
 
 </div>
 
 ```{code-cell} ipython3
 position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position")
-position_basis.compute_features(position)
 position_basis = position_basis.to_transformer()
-speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15, label="speed").to_transformer().set_input_shape(1)
+speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15, label="speed")
 basis = position_basis + speed_basis
 basis
 ```
@@ -252,7 +265,7 @@ Let's create a single TsdFrame to hold all our inputs:
 
 <div class="render-user render-presenter">
 
-- Create a single TsdFrame to hold all our inputs:
+- Stack position and speed in a single TsdFrame to hold all our inputs:
 </div>
 
 ```{code-cell} ipython3
@@ -268,7 +281,9 @@ transformer_input = nap.TsdFrame(
 
 <div class="render-user render-presenter">
 
-- Pass this input to our transformed additive basis:
+- Pass this input to our transformed additive basis. 
+- Note that we do not need to call `set_input_shape` here because each basis element processes one column of the 2D input.
+
 </div>
 
 Our new additive transformer basis can then take these behavioral inputs and turn them into the model's design matrix.
@@ -363,9 +378,9 @@ For scikit-learn parameter grids, we use `__` to stand in for `.`:
 ```{code-cell} ipython3
 param_grid = {
     "basis__position__n_basis_funcs": [5, 10, 20],
-    "basis__speed": [nmo.basis.MSplineEval(15).set_input_shape(1),
-                      nmo.basis.BSplineEval(15).set_input_shape(1),
-                      nmo.basis.RaisedCosineLinearEval(15).set_input_shape(1)],
+    "basis__speed": [nmo.basis.MSplineEval(15),
+                      nmo.basis.BSplineEval(15),
+                      nmo.basis.RaisedCosineLinearEval(15)],
 }
 ```
 
@@ -422,6 +437,19 @@ What we would like to do here is comparing alternative models: position + speed,
 
 Here is a neat NeMoS trick to circumvent that. scikit-learn's GridSearchCV assumes the INPUT stays the same across all models, but for feature selection, we want to compare models with different features (position + speed, position only, speed only). The solution: create a "null" basis that produces zero features, so all models take the same 2D input (position, speed) but some features become empty. First we need to define this "null" basis taking advantage of `CustomBasis`, which defines a basis from a list of functions.
 
+<div class="render-user render-presenter">
+
+Let's move on to feature selection. Our goal is comparing alternative models, for this example we will consider: position + speed, position only or speed only.
+
+Problem: scikit-learn's cross-validation assumes that the input to the pipeline does not change, while each model will have a different input. What can we do? 
+
+Let's see how to circumvent this with a neat basis trick.
+
+- Create a "null" basis that produces zero features using `CustomBasis`, which defines a basis from a list of functions.
+
+</div>
+
+
 ```{code-cell} ipython3
 # this function creates an empty array (n_sample, 0)
 def func(x):
@@ -435,6 +463,12 @@ null_basis.compute_features(position).shape
 ```
 
 Why is this useful? Because we can use this `null_basis` and basis composition to do model selection.
+
+<div class="render-user render-presenter">
+
+- Add the null basis to the speed or position basis to generate a composite basis for the position-only and speed-only model that receives the same 2D input as the model including all predictors!
+
+</div>
 
 ```{code-cell} ipython3
 # first we note that the position + speed basis is in the basis attribute
@@ -480,6 +514,11 @@ cv_df[["param_basis__basis", "mean_test_score", "rank_test_score"]]
 Unsurprisingly, position comes up as the predictor with the larger explnatory power and speed adds marginal benefits.
 
 For the next project, you can use all the tools showcased here to find a better encoding model model for these hyppocampal neurons. 
+
+Suggestions:
+
+- Extend the model including the theta phase as predictor. 
+- Use the NeMoS multiplicative basis to capture model the interaction between theta phase and position. 
 
 
 ## Conclusion
