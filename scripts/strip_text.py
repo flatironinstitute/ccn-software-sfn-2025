@@ -3,7 +3,6 @@
 import re
 import os
 import pathlib
-from glob import glob
 
 USER_NB_EXPLAIN="""
 This notebook has had all its explanatory text removed and has not been run.
@@ -16,21 +15,20 @@ This notebook has had all its explanatory text removed and has not been run.
  while listening to the presenter's explanation. In order to see the fully
  rendered of this notebook, go [here]({})"""
 
-for md in glob("docs/source/full/*/*md"):
+repo_dir = pathlib.Path(__file__).parent.parent
+for md in (repo_dir / "docs/source/full").glob("*/*md"):
 
     # don't do this on index or if we've already removed text
-    if "index" in md or "stripped" in md:
+    if "index" in md.stem or "stripped" in md.stem:
         continue
 
-    user_md = pathlib.Path(md.replace("full", "users").replace(".md", "-users.md"))
+    user_md = pathlib.Path(str(md).replace("full", "users").replace(".md", "-users.md"))
     user_ipynb = f"{user_md.stem}.ipynb"
-    presenter_md = pathlib.Path(md.replace("full", "presenters").replace(".md", "-presenters.md"))
+    presenter_md = pathlib.Path(str(md).replace("full", "presenters").replace(".md", "-presenters.md"))
     presenter_ipynb = f"{presenter_md.stem}.ipynb"
     os.makedirs(user_md.parent, exist_ok=True)
     os.makedirs(presenter_md.parent, exist_ok=True)
 
-    # make it a path object here, because we can't do string replace on path objects
-    md = pathlib.Path(md)
     ipynb = f"{md.stem}.ipynb"
     local_path = f"../../full/{md.parent.name}/{md.name}"
 
@@ -65,7 +63,7 @@ for md in glob("docs/source/full/*/*md"):
                 presenter_text.append(t)
         else:
             presenter_text.append(t)
-    presenter_text = "\n".join(presenter_text)
+    presenter_text = "\n\n".join(presenter_text)
     presenter_text = presenter_text.replace(title, title + PRESENTER_NB_EXPLAIN.format(local_path))
     presenter_text = presenter_text.replace(ipynb, presenter_ipynb)
     presenter_md.write_text(presenter_text)

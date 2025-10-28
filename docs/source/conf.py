@@ -96,4 +96,4 @@ else:
     nb_execution_excludepatterns = []
     print("Running all notebooks, see CONTRIBUTING for details")
 
-nb_execution_excludepatterns += ['*model_selection*', '*-users*', '*-presenters*']
+nb_execution_excludepatterns += ['*-users*', '*-presenters*']
