@@ -1019,9 +1019,9 @@ doc_plots.plot_rates_and_smoothed_counts(
 );
 ```
 
-<div class="render-all">
-
 ## All-to-all Connectivity
+
+<div class="render-all">
 
 The same approach can be applied to the whole population. Now the firing rate of a neuron
 is predicted not only by its own count history, but also by the rest of the
