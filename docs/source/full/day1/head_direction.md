@@ -1100,6 +1100,7 @@ model = nmo.glm.PopulationGLM(
 print(f"Model coefficients shape: {model.coef_.shape}")
 ```
 
+(head_direction_fit)=
 #### Comparing model predictions.
 
 <div class="render-all">
