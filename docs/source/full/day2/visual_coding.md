@@ -642,7 +642,7 @@ If you're having trouble coming up with features to include, here are some possi
 - Stimulus.
 - Stimulus onset.
 - Stimulus offset.
-- For multiple neurons: neuron-to-neuron coupling.
+- For multiple neurons: neuron-to-neuron coupling. Refer back to the [the head direction notebook from the first day](head_direction_fit) to see an example of fitting coupling filters.
 
 For the stimuli predictors, you probably want to model white and black separately.
 
@@ -778,10 +778,10 @@ X_train = additive_basis.compute_features(
 
 <div class="render-all">
 
-- Decide on regularization
-- Initialize GLM
-- Call fit
-- Visualize result on PSTHs
+- Decide on regularization.
+- Initialize GLM.
+- Call fit.
+- Visualize result on PSTHs. (Note that you should use {func}`~pynapple.process.perievent.compute_perievent_continuous` here!)
 
 </div>
 
@@ -845,7 +845,6 @@ Here's a helper function for plotting the PSTH of the data and predictions (for 
 def plot_pop_psth(
         peri,
         color_flashes,
-        unit_id=None,
         bin_size=0.005,
         smoothing=0.015,
         **peri_others
@@ -918,7 +917,17 @@ def plot_pop_psth(
     plt.tight_layout()
 ```
 
+<div class="render-all">
+
+The following cell shows you how to call the above function. Its arguments are:
+- The PSTH object computed from the data. This should only contain the responses to either the black or white flashes, but can contain the PSTHs from one or more-than-one neurons.
+- A string, either `"white"` or `"black"`, which determines some of the styling.
+- Any number of keyword arguments (e.g., `predictions=` shown below) which accept a tuple of `(style, peri)`, where `style` is a valid matplotlib style (e.g., `"red"`) and `peri` is additional PSTHs to plot. Expected use is, as below, to plot the predictions in a different color on top of the actual data.
+
+</div>
+
 ```{code-cell} ipython3
+:tags: [render-all]
 plot_pop_psth(peri_white[unit_id], "white", predictions=("red", peri_white_pred_unit))
 plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_unit))
 ```
