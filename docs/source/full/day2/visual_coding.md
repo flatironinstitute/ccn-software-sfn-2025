@@ -377,8 +377,6 @@ However, it would be easier to scale (and more reproducible) if you came up with
 
 If you have other ideas and the time to explore them, you can return to this section and try other definitions of responsiveness.
 
-:::
-
 </div>
 
 ```{code-cell} ipython3
@@ -519,7 +517,9 @@ There are many ways to do this. We'll show fitting a single neuron `GLM` to a va
 ### Prepare data
 
 <div class="render-all">
+
 - Create spike count data. (Hint: review the [current injection notebook](current-inj-basic).)
+
 </div>
 
 ```{code-cell} ipython3
