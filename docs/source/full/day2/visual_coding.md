@@ -24,6 +24,12 @@ warnings.filterwarnings(
     message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
     category=UserWarning,
 )
+
+warnings.filterwarnings(
+    "ignore",
+    message="Converting 'd' to numpy.array",
+    category=UserWarning,
+)
 ```
 
 :::{admonition} Download
