@@ -100,16 +100,6 @@ from sklearn import pipeline
 # shut down jax to numpy conversion warning
 nap.nap_config.suppress_conversion_warnings = True
 
-# utility function to visualize predictions
-def visualize_model_predictions(glm, X):
-    # predict the model's firing rate
-    predicted_rate = glm.predict(X) / bin_size
-
-    # compute the position and speed tuning curves using the predicted firing rate.
-    glm_pos = nap.compute_tuning_curves(predicted_rate, position, bins=50, epochs=position.time_support, feature_names=["position"])
-    glm_speed = nap.compute_tuning_curves(predicted_rate, speed, bins=30, epochs=position.time_support, feature_names=["speed"])
-
-    workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_pos, glm_speed);
 ```
 
 
@@ -234,6 +224,19 @@ for s, e in position.time_support.values:
 
 speed = nap.Tsd(t=position.t, d=np.hstack(speed), time_support=position.time_support)
 print(speed.shape)
+
+# utility function to visualize predictions
+tc_speed = nap.compute_tuning_curves(spikes, speed, bins=20, epochs=speed.time_support, feature_names=["speed"])
+
+def visualize_model_predictions(glm, X):
+    # predict the model's firing rate
+    predicted_rate = glm.predict(X) / bin_size
+
+    # compute the position and speed tuning curves using the predicted firing rate.
+    glm_pos = nap.compute_tuning_curves(predicted_rate, position, bins=50, epochs=position.time_support, feature_names=["position"])
+    glm_speed = nap.compute_tuning_curves(predicted_rate, speed, bins=30, epochs=position.time_support, feature_names=["speed"])
+
+    workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_pos, glm_speed);
 ```
 
 ### Define 1D NeMoS Bases 
@@ -737,3 +740,173 @@ We then visualize the predictions of `best_estim` the same as before.
 
 visualize_model_predictions(best_estim, transformer_input)
 ```
+
+
+## Feature selection
+
+Now, finally, we understand almost enough about how scikit-learn works to figure out whether both position and speed are necessary inputs, i.e., to do feature selection. 
+
+What we would like to do here is comparing alternative models: position + speed, position only or speed only. However, scikit-learn's cross-validation assumes that the input to the pipeline does not change, only the hyperparameters do. So, how do we go about model selection since we require different input for different model we want to compare?
+
+Here is a neat NeMoS trick to circumvent that. scikit-learn's GridSearchCV assumes the INPUT stays the same across all models, but for feature selection, we want to compare models with different features (position + speed, position only, speed only). The solution: create a "null" basis that produces zero features, so all models take the same 2D input (position, speed) but some features become empty. First we need to define this "null" basis taking advantage of `CustomBasis`, which defines a basis from a list of functions.
+
+<div class="render-user render-presenter">
+
+Let's move on to feature selection. Our goal is comparing alternative models, for this example we will consider: position + speed, position only or speed only.
+
+Problem: scikit-learn's cross-validation assumes that the input to the pipeline does not change, while each model will have a different input. What can we do? 
+
+Let's see how to circumvent this with a neat basis trick.
+
+- Create a "null" basis that produces zero features using `CustomBasis`, which defines a basis from a list of functions.
+
+</div>
+
+```{code-cell} ipython3
+# this function creates an empty array (n_sample, 0)
+def func(x):
+    return np.zeros((x.shape[0], 0))
+
+# Create a null basis using the custom basis class
+null_basis = nmo.basis.CustomBasis([func]).to_transformer()
+
+# this creates an empty feature
+null_basis.compute_features(position).shape
+```
+
+<div class="render-user">
+```{code-cell} ipython3
+# this function creates an empty array (n_sample, 0)
+def func(x):
+    return np.zeros((x.shape[0], 0))
+# Create a null transformer basis using the custom basis class
+null_basis = 
+# this creates an empty feature
+null_basis.compute_features(position).shape
+```
+</div>
+
+Why is this useful? Because we can use this `null_basis` and basis composition to do model selection. As a first step, we can notice that the original additive basis is stored as a `basis` attribute in the `TransformerBasis`.
+
+<div class="render-user render-presenter">
+
+- First we can note that the original "position + speed" additive basis is the `basis` attribute of the transformer.
+</div>
+
+```{code-cell} ipython3
+
+pipe["basis"].basis
+```
+
+<div class="render-user render-presenter">
+
+- Add the null basis to the speed or position basis to generate a composite basis for the position-only and speed-only model that receives the same 2D input as the model including all predictors!
+</div>
+
+```{code-cell} ipython3
+# define the 1D transformer bases with no label
+position_bas = nmo.basis.MSplineEval(n_basis_funcs=10).to_transformer()
+speed_bas = nmo.basis.MSplineEval(n_basis_funcs=15).to_transformer()
+
+# combine them with each other or with the null basis to define each model.
+basis_all = position_bas + speed_bas
+basis_position = position_bas + null_basis
+basis_speed = null_basis + speed_bas
+
+# assign label (not necessary but nice)
+basis_all.label = "position + speed"
+basis_position.label = "position"
+basis_speed.label = "speed"
+```
+
+<div class="render-user">
+```{code-cell} ipython3
+# define the 1D transformer bases with no label
+position_bas = 
+speed_bas = 
+# combine them with each other or with the null basis to define each model.
+basis_all = 
+basis_position = 
+basis_speed = 
+# assign label (not necessary but nice)
+basis_all.label = 
+basis_position.label = 
+basis_speed.label = 
+```
+</div>
+
+<div class="render-user render-presenter">
+
+- Create a parameter grid for each model of interest. 
+- The attribute to cross-validate over is `"basis__basis"`, where the first "basis" is the name of the pipeline step, the second one is the attribute of the transformer.
+</div>
+
+```{code-cell} ipython3
+# then we create a parameter grid defining a grid of 2D basis for each model of interest
+param_grid = {
+    "basis__basis": 
+    [
+        basis_all,  
+        basis_position, 
+        basis_speed 
+    ],
+}
+```
+
+<div class="render-user">
+```{code-cell} ipython3
+param_grid =
+```
+</div>
+
+```{code-cell} ipython3
+# finally we define and fit our CV
+cv = model_selection.GridSearchCV(pipe, param_grid, cv=cv_folds)
+cv.fit(transformer_input, count)
+```
+
+<div class="render-user">
+```{code-cell} ipython3
+# finally we define and fit our CV
+cv =
+```
+</div>
+
+Let's now take a look to the model results.
+
+```{code-cell} ipython3
+:tags: [render-all]
+
+cv_df = pd.DataFrame(cv.cv_results_)
+
+# let's just plot a minimal subset of cols
+cv_df[["param_basis__basis", "mean_test_score", "rank_test_score"]]
+```
+
+Unsurprisingly, position comes up as the predictor with the larger explnatory power and speed adds marginal benefits.
+
+For the next project, you can use all the tools showcased here to find a better encoding model model for these hyppocampal neurons. 
+
+Suggestions:
+
+- Extend the model including the theta phase as predictor. 
+- Use the NeMoS [multiplicative basis](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.MultiplicativeBasis.html) to capture model the interaction between theta phase and position. 
+
+
+## Conclusion
+
+Various combinations of features can lead to different results. Feel free to explore more. To go beyond this notebook, you can check the following references :
+
+  - [Hardcastle, Kiah, et al. "A multiplexed, heterogeneous, and adaptive code for navigation in medial entorhinal cortex." Neuron 94.2 (2017): 375-387](https://www.cell.com/neuron/pdf/S0896-6273(17)30237-4.pdf)
+
+  - [McClain, Kathryn, et al. "Position–theta-phase model of hippocampal place cell activity applied to quantification of running speed modulation of firing rate." Proceedings of the National Academy of Sciences 116.52 (2019): 27035-27042](https://www.pnas.org/doi/abs/10.1073/pnas.1912792116)
+
+  - [Peyrache, Adrien, Natalie Schieferstein, and Gyorgy Buzsáki. "Transformation of the head-direction signal into a spatial code." Nature communications 8.1 (2017): 1752.](https://www.nature.com/articles/s41467-017-01908-3)
+
+## References
+
+<div class="render-all">
+
+The data in this tutorial comes from [Grosmark, Andres D., and György Buzsáki. "Diversity in neural firing dynamics supports both rigid and learned hippocampal sequences." Science 351.6280 (2016): 1440-1443](https://www.science.org/doi/full/10.1126/science.aad1935).
+
+</div>
