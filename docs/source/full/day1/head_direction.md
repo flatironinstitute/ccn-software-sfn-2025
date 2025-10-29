@@ -38,6 +38,9 @@ The pynapple documentation can be found [here](https://pynapple.org).
 The nemos documentation can be found [here](https://nemos.readthedocs.io/en/latest/).
 
 
+
+
+
 Let's start by importing all the packages.
 If an import fails, you can do `!pip install pynapple nemos matplotlib` in a cell to fix it.
 
