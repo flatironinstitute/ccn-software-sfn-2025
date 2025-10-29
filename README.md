@@ -12,6 +12,12 @@ We have a slack channel for communicating with attendees, if you haven't receive
 - [ ] decide where to put group projects on site
 - [ ] hide stuff on the website? i.e., don't need to have full toctree for all three types of notebooks
 - [ ] group projects should have "helpful links" section at the top, which link to relevant parts of the workshop, as well as documentation and other resources.
+    - [ ] tell people about %whos magic
+- [ ] add slide to plenoptic presentation talking about projects that use it (or could use it), including physiology (e.g., Neel's project)
+- [ ] come up with pairs 
+- [ ] make sure all crossref links are working
+- [ ] update the links to the sklearn / place cell notebook
+- [ ] update presentations, and add link to "Edoardo's presentation" in visual coding notebook
 
 ## Building the site locally
 
