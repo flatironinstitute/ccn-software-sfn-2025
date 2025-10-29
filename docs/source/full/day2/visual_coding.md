@@ -86,7 +86,7 @@ plt.style.use(nmo.styles.plot_style)
 ## Downloading and preparing data
 
 <div class="render-all">
-In this section, we will download the data from DANDI and extract the relevant parts for analysis and modeling. This section is largely presented to you as is, so that you can get to the substantive sections more quickly.
+In this section, we will download the data and extract the relevant parts for analysis and modeling. This section is largely presented to you as is, so that you can get to the substantive sections more quickly.
 
 First we download and load the data into pynapple.
 </div>
@@ -94,6 +94,20 @@ First we download and load the data into pynapple.
 ```{code-cell} ipython3
 :tags: [render-all]
 
+data = workshop_utils.fetch_data("visual_coding_data.zip")
+flashes, units = [nap.load_file(d) for d in data]
+```
+
+:::{admonition} Full dataset?
+:class: dropdown
+
+In this notebook, we are using only a subset of the full dataset. We've done a little bit of preprocessing and selection to reduce the size of the total file, which includes neurons from many different brain areas and stimulus paradigms.
+
+To load the whole dataset for this session, run the following:
+
+**WARNING:** this dataset is 2.6GB, so the following may take a while to run.
+
+```{code-block} python
 # Dataset information
 dandiset_id = "000021"
 dandi_filepath = "sub-726298249/sub-726298249_ses-754829445.nwb"
@@ -103,7 +117,11 @@ io = nmo.fetch.download_dandi_data(dandiset_id, dandi_filepath)
 
 # load data using pynapple
 data = nap.NWBFile(io.read(), lazy_loading=True)
+```
 
+`data` is then a pynapple NWB object, as we've interacted with in other notebooks. The following additional preprocessing was done to the NWB file before saving to the files we load at the beginning of this notebook:
+
+```{code-block} python
 # grab the spiking data
 units = data["units"]
 
@@ -116,11 +134,19 @@ for elec in data.nwb.electrodes:
 
 # Add a new column to include location in our spikes TsGroup
 units.brain_area = [channel_probes[int(ch_id)] for ch_id in units.peak_channel_id]
+# and only grab those located in area VISp
+units = units[units.brain_area == "VISp"]
 
 # drop unnecessary metadata
 units.restrict_info(["rate", "quality", "brain_area"])
+
+flashes = data["flashes_presentations"]
+flashes.restrict_info(["color"])
 ```
 
+See [Allen Institute website](https://portal.brain-map.org/circuits-behavior/visual-coding-neuropixels) for more information on the dataset.
+
+:::
 <div class="render-all">
 
 Now that we have our spiking data, let's restrict our dataset to the relevant part.
@@ -133,10 +159,6 @@ During the flashes presentation trials, mice were exposed to white or black full
 
 ```{code-cell} ipython3
 :tags: [render-all]
-
-flashes = data["flashes_presentations"]
-flashes.restrict_info(["color"])
-
 # create a separate object for black and white flashes
 flashes_white = flashes[flashes["color"] == "1.0"]
 flashes_black = flashes[flashes["color"] == "-1.0"]
@@ -144,12 +166,6 @@ flashes_black = flashes[flashes["color"] == "-1.0"]
 
 <div class="render-all">
 
-:::{admonition} Other stimulus classes?
-:class: dropdown
-
-As can be seen in the image above, there are many other stimulus types shown in this experiment. If you finish analyzing the flashes and want to look at one of the others, you can do so by grabbing the corresponding `IntervalSet` from the `data` object; they are all named `{stim_type}_presentations`, where `{stim_type}` may be `flashes`, `gabors`, `static_gratings`, etc.
-
-:::
 
 Let's visualize our stimuli:
 
@@ -162,7 +178,7 @@ n_flashes = 5
 n_seconds = 13
 offset = .5
 
-start = data["flashes_presentations"]["start"].min() - offset
+start = flashes["start"].min() - offset
 end = start + n_seconds
 
 fig, ax = plt.subplots(figsize = (17, 4))
