@@ -269,6 +269,15 @@ Adding two 1D basis, will result in a 2D additive basis. The `compute_features` 
 
 </div>
 
+<div class="render-user">
+```{code-cell} ipython3
+# add the bases
+basis = 
+# get the design matrix
+X = 
+```
+</div>
+
 ```{code-cell} ipython3
 
 basis = position_basis + speed_basis
@@ -284,14 +293,6 @@ X_numpy = np.concatenate(
 
 print("Are the design matrices equivalent?", np.all(X.d == X_numpy.d))
 ```
-
-<div class="render-user">
-# add the bases
-basis = 
-# get the design matrix
-X = 
-</div>
-
 
 ## Scikit-learn
 
@@ -317,6 +318,18 @@ This object requires an estimator, our `glm` object here, and `param_grid`, a di
 
 </div>
 
+<div class="render-user">
+```{code-cell} ipython3
+# configurations of the PopulationGLM
+solver_kwargs={"tol": 1e-12}
+solver_name="LBFGS"
+# define a Ridge regularized GLM
+glm = 
+# get the design matrix
+X = 
+```
+</div>
+
 ```{code-cell} ipython3
 # define a Ridge GLM
 glm = nmo.glm.PopulationGLM(
@@ -329,15 +342,6 @@ param_grid = {
 }
 ```
 
-<div class="render-user">
-# configurations of the PopulationGLM
-solver_kwargs={"tol": 1e-12}
-solver_name="LBFGS"
-# define a Ridge regularized GLM
-glm = 
-# get the design matrix
-X = 
-</div>
 
 <div class="render-user render-presenter">
 
@@ -345,16 +349,20 @@ X =
 
 </div>
 
+<div class="render-user">
+```{code-cell} ipython3
+cv_folds = 5
+cv = 
+cv
+```
+</div>
+
 ```{code-cell} ipython3
 cv_folds = 5
 cv = model_selection.GridSearchCV(glm, param_grid, cv=cv_folds)
 cv
 ```
-<div class="render-user">
-cv_folds = 5
-cv = 
-cv
-</div>
+
 
 This will take a bit to run, because we're fitting the model many times!
 
@@ -398,13 +406,6 @@ Unlike the glm objects, our basis objects are not scikit-learn compatible right 
 
 </div>
 
-```{code-cell} ipython3
-
-position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position").to_transformer()
-# or equivalently:
-position_basis = nmo.basis.TransformerBasis(nmo.basis.MSplineEval(n_basis_funcs=10, label="position"))
-position_basis
-```
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -413,6 +414,15 @@ position_basis =
 position_basis
 ```
 </div>
+
+```{code-cell} ipython3
+
+position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position").to_transformer()
+# or equivalently:
+position_basis = nmo.basis.TransformerBasis(nmo.basis.MSplineEval(n_basis_funcs=10, label="position"))
+position_basis
+```
+
 
 This gives the basis object the `transform` method, which is equivalent to `compute_features`. However, transformers have some limits:
 
@@ -453,7 +463,7 @@ If the basis has more than one component (for example, if it is the addition of 
 
 **Case 1)** One input per component:
 
-```{code-cell} ipython3
+```{code-block} ipython3
 # generate a composite basis
 basis_2d = nmo.basis.MSplineEval(5) + nmo.basis.MSplineEval(5)
 basis_2d = basis_2d.to_transformer()
@@ -464,26 +474,26 @@ X = np.concatenate([x, y], axis=1)
 result = basis_2d.transform(X)
 ```
 
-**Case 2)** Multiple input per component.
+**Case 2)** Multiple inputs per component.
 
 
 - If one or more basis process multiple inputs (multiple columns of the 2D array), trying to call the `tranform` method directly will lead to an error. 
 - This is because the basis doesn't know which component should process which column. 
 
 
-```{code-cell} ipython3
-:tags: [raises-exception]
+```{code-block} ipython3
+:tags: [raises-exception, render-all]
 
 # Assume 2 input for the first component and 3 for the second.
 x, y = np.random.randn(10, 2), np.random.randn(10, 3)
 X = np.concatenate([x, y], axis=1)
 
-res = basis_2d.transform(X)
+res = basis_2d.transform(X)  # This will raise an exception!
 ```
 
 To prevent that, use `set_input_shape` to define how many inputs each component should process.
 
-```{code-cell} ipython3
+```{code-block} ipython3
 # Set the expected input shape instead, different options:
 
 # array
@@ -501,13 +511,6 @@ res3 = basis_2d.set_input_shape((2,), (3,)).transform(X)
 
 </div>
 
-```{code-cell} ipython3
-position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position")
-speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15, label="speed")
-basis = position_basis + speed_basis
-basis = basis.to_transformer()
-basis
-```
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -521,6 +524,15 @@ basis =
 basis
 ```
 </div>
+
+```{code-cell} ipython3
+position_basis = nmo.basis.MSplineEval(n_basis_funcs=10, label="position")
+speed_basis = nmo.basis.MSplineEval(n_basis_funcs=15, label="speed")
+basis = position_basis + speed_basis
+basis = basis.to_transformer()
+basis
+```
+
 
 
 Let's create a single TsdFrame to hold all our inputs:
@@ -569,6 +581,16 @@ Pipelines are objects that accept a series of (0 or more) transformers, culminat
 
 </div>
 
+<div class="render-user">
+```{code-cell} ipython3
+# set the reg strength to the optimal
+glm = 
+# pipe the basis and the glm
+pipe = pipeline.Pipeline(
+pipe
+```
+</div>
+
 ```{code-cell} ipython3
 # set the reg strength to the optimal
 glm = nmo.glm.PopulationGLM(solver_name="LBFGS", solver_kwargs={"tol": 10**-12})
@@ -579,15 +601,7 @@ pipe = pipeline.Pipeline([
 pipe
 ```
 
-<div class="render-user">
-```{code-cell} ipython3
-# set the reg strength to the optimal
-glm = 
-# pipe the basis and the glm
-pipe = pipeline.Pipeline(
-pipe
-```
-</div>
+
 
 This pipeline object allows us to e.g., call fit using the *initial input*:
 
@@ -637,18 +651,19 @@ Let's cross-validate on:
 </div>
 
 ```{code-cell} ipython3
+:tags: [render-all]
 
 # the label of the pipeline step retrieves the basis
 print(pipe["basis"])
 
 # the position basis can by retreived by its label
-print(pipe["basis"]["position"])
+print("\n", pipe["basis"]["position"])
 
 # the n_basis_funcs is an attribute
-print(pipe["basis"]["position"].n_basis_funcs)
+print("\n", pipe["basis"]["position"].n_basis_funcs)
 
 # with the same syntax we can retreive the speed basis
-print(pipe["basis"]["speed"])
+print("\n", pipe["basis"]["speed"])
 ```
 
 For scikit-learn parameter grids, we use `__` to stand in for `.`:
@@ -656,10 +671,16 @@ For scikit-learn parameter grids, we use `__` to stand in for `.`:
 <div class="render-user render-presenter">
 
 - Construct `param_grid`, using `__` to stand in for `.`
-- In sklearn pipelines, we access nested parameters using double underscores:
+- In scikit-learn pipelines, we access nested parameters using double underscores:
   - `pipe["basis"]["position"].n_basis_funcs` ← normal Python syntax
-  - `"basis__position__n_basis_funcs"` ← sklearn parameter grid syntax
+  - `"basis__position__n_basis_funcs"` ← scikit-learn parameter grid syntax
 
+</div>
+
+<div class="render-user">
+```{code-cell} ipython3
+param_grid = 
+```
 </div>
 
 ```{code-cell} ipython3
@@ -670,11 +691,7 @@ param_grid = {
                       nmo.basis.RaisedCosineLinearEval(15)],
 }
 ```
-<div class="render-user">
-```{code-cell} ipython3
-param_grid = 
-```
-</div>
+
 
 <div class="render-user render-presenter">
 
@@ -682,17 +699,18 @@ param_grid =
 
 </div>
 
-```{code-cell} ipython3
-cv = model_selection.GridSearchCV(pipe, param_grid, cv=cv_folds)
-cv.fit(transformer_input, count)
-```
-
 <div class="render-user">
 ```{code-cell} ipython3
 # define the grid search and fit
 cv =
 ```
 </div>
+
+```{code-cell} ipython3
+cv = model_selection.GridSearchCV(pipe, param_grid, cv=cv_folds)
+cv.fit(transformer_input, count)
+```
+
 
 <div class="render-user render-presenter">
 
@@ -714,11 +732,6 @@ scikit-learn does not cache every model that it runs (that could get prohibitive
 
 </div>
 
-```{code-cell} ipython3
-best_estim = cv.best_estimator_
-best_estim
-```
-
 <div class="render-user">
 ```{code-cell} ipython3
 # define the grid search and fit
@@ -726,6 +739,13 @@ best_estim =
 best_estim
 ```
 </div>
+
+```{code-cell} ipython3
+best_estim = cv.best_estimator_
+best_estim
+```
+
+
 
 We then visualize the predictions of `best_estim` the same as before.
 
@@ -762,6 +782,18 @@ Let's see how to circumvent this with a neat basis trick.
 
 </div>
 
+<div class="render-user">
+```{code-cell} ipython3
+# this function creates an empty array (n_sample, 0)
+def func(x):
+    return np.zeros((x.shape[0], 0))
+# Create a null transformer basis using the custom basis class
+null_basis = 
+# this creates an empty feature
+null_basis.compute_features(position).shape
+```
+</div>
+
 ```{code-cell} ipython3
 # this function creates an empty array (n_sample, 0)
 def func(x):
@@ -774,17 +806,7 @@ null_basis = nmo.basis.CustomBasis([func]).to_transformer()
 null_basis.compute_features(position).shape
 ```
 
-<div class="render-user">
-```{code-cell} ipython3
-# this function creates an empty array (n_sample, 0)
-def func(x):
-    return np.zeros((x.shape[0], 0))
-# Create a null transformer basis using the custom basis class
-null_basis = 
-# this creates an empty feature
-null_basis.compute_features(position).shape
-```
-</div>
+
 
 Why is this useful? Because we can use this `null_basis` and basis composition to do model selection. As a first step, we can notice that the original additive basis is stored as a `basis` attribute in the `TransformerBasis`.
 
@@ -803,21 +825,6 @@ pipe["basis"].basis
 - Add the null basis to the speed or position basis to generate a composite basis for the position-only and speed-only model that receives the same 2D input as the model including all predictors!
 </div>
 
-```{code-cell} ipython3
-# define the 1D transformer bases with no label
-position_bas = nmo.basis.MSplineEval(n_basis_funcs=10).to_transformer()
-speed_bas = nmo.basis.MSplineEval(n_basis_funcs=15).to_transformer()
-
-# combine them with each other or with the null basis to define each model.
-basis_all = position_bas + speed_bas
-basis_position = position_bas + null_basis
-basis_speed = null_basis + speed_bas
-
-# assign label (not necessary but nice)
-basis_all.label = "position + speed"
-basis_position.label = "position"
-basis_speed.label = "speed"
-```
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -835,10 +842,33 @@ basis_speed.label =
 ```
 </div>
 
+```{code-cell} ipython3
+# define the 1D transformer bases with no label
+position_bas = nmo.basis.MSplineEval(n_basis_funcs=10).to_transformer()
+speed_bas = nmo.basis.MSplineEval(n_basis_funcs=15).to_transformer()
+
+# combine them with each other or with the null basis to define each model.
+basis_all = position_bas + speed_bas
+basis_position = position_bas + null_basis
+basis_speed = null_basis + speed_bas
+
+# assign label (not necessary but nice)
+basis_all.label = "position + speed"
+basis_position.label = "position"
+basis_speed.label = "speed"
+```
+
+
 <div class="render-user render-presenter">
 
 - Create a parameter grid for each model of interest. 
 - The attribute to cross-validate over is `"basis__basis"`, where the first "basis" is the name of the pipeline step, the second one is the attribute of the transformer.
+</div>
+
+<div class="render-user">
+```{code-cell} ipython3
+param_grid =
+```
 </div>
 
 ```{code-cell} ipython3
@@ -855,7 +885,8 @@ param_grid = {
 
 <div class="render-user">
 ```{code-cell} ipython3
-param_grid =
+# finally we define and fit our CV
+cv =
 ```
 </div>
 
@@ -865,12 +896,6 @@ cv = model_selection.GridSearchCV(pipe, param_grid, cv=cv_folds)
 cv.fit(transformer_input, count)
 ```
 
-<div class="render-user">
-```{code-cell} ipython3
-# finally we define and fit our CV
-cv =
-```
-</div>
 
 Let's now take a look to the model results.
 
@@ -895,7 +920,9 @@ Suggestions:
 
 ## Conclusion
 
-Various combinations of features can lead to different results. Feel free to explore more. To go beyond this notebook, you can check the following references :
+<div class="render-all">
+
+Various combinations of features can lead to different results. From this quick demo it looks like the position-only model is only marginally worst compared to the full model. 
 
   - [Hardcastle, Kiah, et al. "A multiplexed, heterogeneous, and adaptive code for navigation in medial entorhinal cortex." Neuron 94.2 (2017): 375-387](https://www.cell.com/neuron/pdf/S0896-6273(17)30237-4.pdf)
 
@@ -903,9 +930,14 @@ Various combinations of features can lead to different results. Feel free to exp
 
   - [Peyrache, Adrien, Natalie Schieferstein, and Gyorgy Buzsáki. "Transformation of the head-direction signal into a spatial code." Nature communications 8.1 (2017): 1752.](https://www.nature.com/articles/s41467-017-01908-3)
 
-## References
+## Project Ideas
 
-<div class="render-all">
+Use what you learned here and compare models including the theta phase. You can model phase precession as an interaction term between position and theta phase; You can include an interaction term by using the basis multiplication operator, for more information see,
+
+- [Background on basis composition](https://nemos.readthedocs.io/en/latest/background/basis/plot_02_ND_basis_function.html)
+
+
+## References
 
 The data in this tutorial comes from [Grosmark, Andres D., and György Buzsáki. "Diversity in neural firing dynamics supports both rigid and learned hippocampal sequences." Science 351.6280 (2016): 1440-1443](https://www.science.org/doi/full/10.1126/science.aad1935).
 
