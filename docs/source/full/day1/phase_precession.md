@@ -1050,6 +1050,7 @@ Another way of putting it is $P(spikes)$ is the normalization factor such that $
 
 If this method looks daunting, we have some good news: pynapple has it implemented already in the function `nap.decode_1d` for decoding a single dimension (or `nap.decode_2d` for two dimensions). All we'll need are the spikes, the tuning curves, and the width of the time window $\tau$.
 
+(phase-precess-cv)=
 ### ASIDE: Cross-validation
 
 Generally this method is cross-validated, which means you train the model on one set of data and test the model on a different, held-out data set. For Bayesian decoding, the "model" refers to the model *likelihood*, which is computed from the tuning curves. 

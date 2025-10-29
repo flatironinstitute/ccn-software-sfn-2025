@@ -47,12 +47,9 @@ This notebook serves as a group project: in groups of 4 or 5, you will analyze d
 
 To start, we will focus on the activity of neurons in the visual cortex (VISp) during passive exposure to full-field flashes of color either black (coded as "-1.0") or white (coded as "1.0") in a gray background. If you have time, you can apply the same procedure to other stimuli or brain areas.
 
-For this exercise, you will:
-- Compute Peristimulus Time Histograms (PSTHs) and select relevant neurons to analyze using `pynapple`.
-- Fit GLMs to these neurons using `nemos`.
+In this notebook, the pre-filled section will first select visually responsive neurons in area VISp. Then, you will fit GLMs to the selected neurons using `nemos`.
 
-As this is the last notebook, the instructions are a bit more hands-off: you will make more of the analysis and modeling decisions yourselves. As a group, you will use your neuroscience knowledge and the skills gained over this workshop to decide:
-- How to select relevant neurons.
+As this is the last notebook, the instructions are a bit more hands-off: you will make more of the modeling decisions yourselves. As a group, you will use your neuroscience knowledge and the skills gained over this workshop to decide:
 - How to avoid overfitting.
 - What features to include in your GLMs.
 - Which basis functions (and parameters) to use for each feature.
@@ -165,13 +162,13 @@ During the flashes presentation trials, mice were exposed to white or black full
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 # create a separate object for black and white flashes
 flashes_white = flashes[flashes["color"] == "1.0"]
 flashes_black = flashes[flashes["color"] == "-1.0"]
 ```
 
 <div class="render-all">
-
 
 Let's visualize our stimuli:
 
@@ -205,22 +202,17 @@ plt.xlim(start-.1,end)
 
 <div class="render-all">
 
-From here on out, you will write the code yourself. This first section will involve us doing some preliminary analyses to find the neurons that are most visually responsive; these are the neurons we will fit our GLM to.
+In this section, we will select a subset of the neurons that are visually responsive, which we will fit our GLM to.
 
-First, let's construct a {class}`~pynapple.IntervalSet` called `extended_flashes` which contains the peristimulus time. Right now, our `flashes` `IntervalSet` defines the start and end time for the flashes. In order to make sure we can model the pre-stimulus baseline and any responses to the stimulus being turned off, we would like to expand these intervals to go from 500 msecs before the start of the stimuli to 500 msecs after the end.
+First, we'll construct a {class}`~pynapple.IntervalSet` called `extended_flashes` which contains the peristimulus time. Right now, our `flashes` `IntervalSet` defines the start and end time for the flashes. In order to make sure we can model the pre-stimulus baseline and any responses to the stimulus being turned off, we would like to expand these intervals to go from 500 msecs before the start of the stimuli to 500 msecs after the end.
 
-This `IntervalSet` should be the same shape as `flashes` and have the same metadata columns.
+This `IntervalSet` will be the same shape as `flashes` and have the same metadata columns.
 
 </div>
 
-<div class="render-user">
 ```{code-cell} ipython3
-dt = .5
-extended_flashes =
-```
-</div>
+:tags: [render-all]
 
-```{code-cell} ipython3
 dt = .50 # 500 ms
 start = flashes.start - dt # Start 500 ms before stimulus presentation
 end = flashes.end + dt # End 500 ms after stimulus presentation
@@ -230,89 +222,33 @@ extended_flashes = nap.IntervalSet(start, end, metadata=flashes.metadata)
 
 <div class="render-all">
 
-If you have succeeded, the following should pass:
+Now, we'll create two separate `IntervalSet` objects, `extended_flashes_black` and `extended_flashes_white`, which contain this info for only the black and the white flashes, respectively.
 
 </div>
 
 ```{code-cell} ipython3
 :tags: [render-all]
 
-assert extended_flashes.shape == flashes.shape
-assert all(extended_flashes.metadata == flashes.metadata)
-assert all(extended_flashes.start == flashes.start - .5)
-assert all(extended_flashes.end == flashes.end + .5)
-```
-
-<div class="render-all">
-
-Now, create two separate `IntervalSet` objects, `extended_flashes_black` and `extended_flashes_white`, which contain this info for only the black and the white flashes, respectively.
-
-</div>
-
-<div class="render-user">
-```{code-cell} ipython3
-extended_flashes_white =
-extended_flashes_black =
-```
-</div>
-
-```{code-cell} ipython3
 extended_flashes_white = extended_flashes[extended_flashes["color"] == "1.0"]
 extended_flashes_black = extended_flashes[extended_flashes["color"] == "-1.0"]
-
-# OR
-
-dt = .50 # 500 ms
-start = flashes_white.start - dt # Start 500 ms before stimulus presentation
-end = flashes_white.end + dt # End 500 ms after stimulus presentation
-extended_flashes_white = nap.IntervalSet(start, end, metadata=flashes_white.metadata) 
-
-start = flashes_black.start - dt # Start 500 ms before stimulus presentation
-end = flashes_black.end + dt # End 500 ms after stimulus presentation
-extended_flashes_black = nap.IntervalSet(start, end, metadata=flashes_black.metadata) 
-```
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-# This should all pass if you created the IntervalSet correctly
-assert extended_flashes_white.shape == flashes_white.shape
-assert all(extended_flashes_white.metadata == flashes_white.metadata)
-assert all(extended_flashes_white.start == flashes_white.start - .5)
-assert all(extended_flashes_white.end == flashes_white.end + .5)
-assert extended_flashes_black.shape == flashes_black.shape
-assert all(extended_flashes_black.metadata == flashes_black.metadata)
-assert all(extended_flashes_black.start == flashes_black.start - .5)
-assert all(extended_flashes_black.end == flashes_black.end + .5)
 ```
 
 <div class="render-all">
 
-Now, select your neurons. There are four criteria we want to use:
+Now, we'll select our neurons. There are four criteria we want to use:
 
 1. Brain area: we are interested in analyzing VISp units for this tutorial
 2. Quality: we will only select “good” quality units. If you're curious, you can (optionally) [read more](https://alleninstitute.github.io/openscope_databook/visualization/visualize_unit_metrics.html) how about the Allen Institute defines quality.
 3. Firing rate: overall, we want units with a firing rate larger than 2Hz around the presentation of stimuli
 4. Responsiveness: we want units that actually respond to changes in the visual stimuli, i.e., their firing rate changes as a result of the stimulus.
 
-Create a new `TsGroup`, `selected_units`, which includes only those units that meet the first three criteria, then check that it passes the assertion block.
-
-:::{admonition} Restrict!
-:class: reminder
-
-Don't forget when selecting based on firing rate that we want neurons whose firing rate is above the threshold **around the presentation of the stimuli!** This means you should use {func}`~pynapple.TsGroup.restrict`! If only we had a useful `IntervalSet` lying around...
-
-:::
+We'll create a new `TsGroup`, `selected_units`, which includes only those units that meet the first three criteria, then check that it passes the assertion block.
 
 </div>
 
-<div class="render-user">
 ```{code-cell} ipython3
-selected_units =
-```
-</div>
+:tags: [render-all]
 
-```{code-cell} ipython3
 # Filter units according criteria 1 & 2
 selected_units = units[(units["brain_area"]=="VISp") & (units["quality"]=="good")] 
 
@@ -323,12 +259,6 @@ selected_units = selected_units.restrict(extended_flashes)
 selected_units = selected_units[(selected_units["rate"]>2.0)]
 ```
 
-```{code-cell} ipython3
-:tags: [render-all]
-
-assert len(selected_units) == 92
-```
-
 <div class="render-all">
 
 Now, in order to determine the responsiveness of the units, it's helpful to use the {func}`~pynapple.process.perievent.compute_perievent` function: this will align units' spiking timestamps with the onset of the stimulus repetitions and take an average over them.
@@ -337,30 +267,11 @@ Let's use that function to construct two separate perievent dictionaries, one al
 
 </div>
 
-<div class="render-user">
 ```{code-cell} ipython3
-peri_white =
-peri_black =
-```
-</div>
+:tags: [render-all]
 
-```{code-cell} ipython3
 # Set window of perievent 500 ms before and after the start of the event
 window_size = (-.250, .500) 
-
-# Re-center timestamps for white stimuli
-# +50 because we subtracted 500 ms at beginning of stimulus presentation
-peri_white = nap.compute_perievent(timestamps=selected_units,
-                                   tref=nap.Ts(extended_flashes_white.start +.50), 
-                                   minmax=window_size)
-
-# Re-center timestamps for black stimuli
-# +50 because we subtracted 500 ms at beginning of stimulus presentation
-peri_black = nap.compute_perievent(timestamps=selected_units,
-                                   tref=nap.Ts(extended_flashes_black.start +.50), 
-                                   minmax=window_size)
-
-# OR
 
 peri_white = nap.compute_perievent(timestamps=selected_units,
                                    tref=nap.Ts(flashes_white.start),
@@ -370,16 +281,9 @@ peri_black = nap.compute_perievent(timestamps=selected_units,
                                    minmax=window_size)
 ```
 
-```{code-cell} ipython3
-assert len(peri_white) == len(selected_units)
-assert ([p.ref_times for p in peri_white.values()] == flashes_white.start).all()
-assert len(peri_black) == len(selected_units)
-assert ([p.ref_times for p in peri_black.values()] == flashes_black.start).all()
-```
-
 <div class="render-all">
 
-Visualizing these perievents can help us determine which units to include. The following helper function should help.
+Visualizing these perievents can help us determine what features we'll want to include in our GLM. The following helper function should help.
 
 </div>
 
@@ -469,30 +373,17 @@ plot_raster_psth(peri_black, selected_units, "black", n_units=9, start_unit=0)
 
 You could manually visualize each of our units and select those that appear, from their PSTH to be responsive.
 
-However, it would be easier to scale (and more reproducible) if you came up with some measure of responsiveness. So how do we compute something that captures "this neuron responds to visual stimuli"?
+However, it would be easier to scale (and more reproducible) if you came up with some measure of responsiveness. So how do we compute something that captures "this neuron responds to visual stimuli"? Here, we will define "responsiveness" as the normalized difference in average firing rate between during stimulus presentation and before the stimulus was presented. We'll define a function that does that in the following hidden cell.
 
-You should be able to do this using a function that iterates over the `peri_white` and `peri_black` dictionaries, returning a single float for each unit.
-
-Let's aim to pick around 20 neurons.
-
-If you're having trouble coming up with one that seems reasonable, expand the following admonition.
-
-:::{admonition} How to compute responsiveness?
-:class: hint dropdown
-
-Try defining responsiveness as the normalized difference in average firing rate between during stimulus presentation and before the stimulus was presented.
-
-We can use {func}`~pynapple.TsGroup.restrict` together with `np.mean` to compute the average firing rates above, and then combine them.
+If you have other ideas and the time to explore them, you can return to this section and try other definitions of responsiveness.
 
 :::
 
 </div>
 
-From here on out, I predict that the participant notebooks are going to start diverging pretty drastically. So we'll show one possibility, but other solutions, as long as they're reasonable, are fine.
-
-For responsiveness, we'll define it as the normalized difference between during stimulus and pre-stimulus average firing rate.
-
 ```{code-cell} ipython3
+:tags: [render-all, hide-input]
+
 def get_responsiveness(perievents, bin_size=0.005):
     """Calculate responsiveness for each neuron. This is computed as:
 
@@ -544,8 +435,12 @@ def get_responsiveness(perievents, bin_size=0.005):
         resp_array[index] = responsiveness
 
     return resp_array
+```
 
+```{code-cell} ipython3
+:tags: [render-all]
 
+# Compute the responsiveness measure
 responsiveness_white = get_responsiveness(peri_white)
 responsiveness_black = get_responsiveness(peri_black)
 
@@ -580,7 +475,14 @@ plot_raster_psth(peri_white, selected_units, "white", n_units=len(peri_white))
 
 As we've seen throughout this workshop, it is important to avoid overfitting your model. We've covered two strategies for doing so: either separate your dataset into train and test subsets or set up a cross-validation scheme. Pick one of these approaches and use it when fitting your GLM model in the next section.
 
-You might find it helpful to refer back to the [](sklearn) notebook and / or to use the following pynapple functions: {func}`~pynapple.IntervalSet.set_diff`, {func}`~pynapple.IntervalSet.union`, {func}`~pynapple.TsGroup.restrict`.
+You might find it helpful to refer back to the [](sklearn) notebook and / or to use the following pynapple functions: {func}`~pynapple.IntervalSet.set_diff`, {func}`~pynapple.IntervalSet.union`, {func}`~pynapple.TsGroup.restrict` (see [](phase-precess-cv)).
+
+:::{admonition} Hints
+:class: hint
+
+Throughout this section and the next we'll include hints. They'll either be links back to earlier notebooks from this workshop that show an example of how to do the step in question, or a hint admonition like this, which you can expand to get a hint.
+
+:::
 
 </div>
 
@@ -609,6 +511,7 @@ You don't have to exactly follow those steps, but make sure you can go from begi
 
 Good luck and we look forward to seeing what you come up with!
 
+
 </div>
 
 There are many ways to do this. We'll show fitting a single neuron `GLM` to a variety of stimulus-derived predictors. You can also see [the original notebook](https://alleninstitute.github.io/openscope_databook/higher-order/GLM_pynapple_nemos.html#adding-coupling-as-a-new-predictor) for a `PopulationGLM` that adds coupling.
@@ -616,13 +519,10 @@ There are many ways to do this. We'll show fitting a single neuron `GLM` to a va
 ### Prepare data
 
 <div class="render-all">
-
-- Create spike count data.
-
+- Create spike count data. (Hint: review the [current injection notebook](current-inj-basic).)
 </div>
 
 ```{code-cell} ipython3
-# General spike counts
 bin_size = .005
 units_counts = selected_units.count(bin_size, ep=extended_flashes)
 ```
@@ -631,18 +531,18 @@ units_counts = selected_units.count(bin_size, ep=extended_flashes)
 
 <div class="render-all">
 
-- Decide on feature(s)
-- Decide on basis
-- Construct design matrix
+- Decide on feature(s).
+- Decide on basis. (Hint: review the [current injection](current-inj-basis) or [place cell](sklearn) notebooks.)
+- Construct design matrix. (Hint: review the [place cell](sklearn) notebook.)
 
 :::{admonition} What features should I include?
 :class: hint dropdown
 
 If you're having trouble coming up with features to include, here are some possibilities:
-- Stimulus.
-- Stimulus onset.
-- Stimulus offset.
-- For multiple neurons: neuron-to-neuron coupling. Refer back to the [the head direction notebook from the first day](head_direction_fit) to see an example of fitting coupling filters.
+- Stimulus. (Review the [current injection](current-inj-prep) notebook.)
+- Stimulus onset. (Hint: you can use {func}`numpy.diff` to find when the stimulus transitions from off to on.)
+- Stimulus offset. (Hint: you can use {func}`numpy.diff` to find when the stimulus transitions from on to off.)
+- For multiple neurons: neuron-to-neuron coupling. (Refer back to the [the head direction notebook from the first day](head_direction_fit) to see an example of fitting coupling filters.)
 
 For the stimuli predictors, you probably want to model white and black separately.
 
@@ -778,10 +678,10 @@ X_train = additive_basis.compute_features(
 
 <div class="render-all">
 
-- Decide on regularization.
-- Initialize GLM.
-- Call fit.
-- Visualize result on PSTHs. (Note that you should use {func}`~pynapple.process.perievent.compute_perievent_continuous` here!)
+- Decide on regularization. (Hint: review Edoardo's presentation and the [place cell](sklearn) notebook.)
+- Initialize GLM. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn) notebooks.)
+- Call fit. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn) notebooks.)
+- Visualize result on PSTHs. (Note that you should use {func}`~pynapple.process.perievent.compute_perievent_continuous` and the model predictions here! Otherwise, this looks very similar to our PSTH calculation above.)
 
 </div>
 
@@ -919,25 +819,26 @@ def plot_pop_psth(
 
 <div class="render-all">
 
-The following cell shows you how to call the above function. Its arguments are:
+The following cell shows you how to call this visualization function. Its arguments are:
 - The PSTH object computed from the data. This should only contain the responses to either the black or white flashes, but can contain the PSTHs from one or more-than-one neurons.
 - A string, either `"white"` or `"black"`, which determines some of the styling.
-- Any number of keyword arguments (e.g., `predictions=` shown below) which accept a tuple of `(style, peri)`, where `style` is a valid matplotlib style (e.g., `"red"`) and `peri` is additional PSTHs to plot. Expected use is, as below, to plot the predictions in a different color on top of the actual data.
+- Any number of keyword arguments (e.g., `predictions=` shown below) whose values are a tuple of `(style, peri)`, where `style` is a valid matplotlib style (e.g., `"red"`) and `peri` is additional PSTHs to plot. Expected use is, as below, to plot the predictions in a different color on top of the actual data.
 
 </div>
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 plot_pop_psth(peri_white[unit_id], "white", predictions=("red", peri_white_pred_unit))
 plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_unit))
 ```
 
 ### Score your model
 
-<div class="render-user render-presenter">
+<div class="render-all">
 
 - We trained on the train set, so now we score on the test set. (Or use cross-validation.)
-- Get a score for your model that you can use to compare across the modeling choices outlined above.
+- Get a score for your model that you can use to compare across the modeling choices outlined above. (Hint: refer back to the [current injection](current-inj-score) or [place cell](sklearn) notebook.)
 
 </div>
 
@@ -955,7 +856,7 @@ print(score)
 
 ### Try to improve your model?
 
-<div class="render-user render-presenter">
+<div class="render-all">
 
 - Go back to the beginning of [this section](visual-glm) and try to improve your model's performance (as reflected by increased score).
 - Keep track of what you've tried and their respective scores. 

@@ -28,6 +28,7 @@ extensions = [
 intersphinx_mapping = {
     'nemos': ("https://nemos.readthedocs.io/en/latest/", None),
     'pynapple': ("https://pynapple.org", None),
+    'numpy': ("https://numpy.org/doc/stable", None),
 }
 
 templates_path = []
