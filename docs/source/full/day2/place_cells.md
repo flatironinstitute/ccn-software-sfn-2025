@@ -317,6 +317,16 @@ For people familiar with NeMoS basis composition, you can add the two bases toge
 - Alternatively, for people familiar with NeMoS, add the basis together, and call `compute_fatures` on the newly created additive basis.
 </div>
 
+<div class="render-user">
+```{code-cell} ipython3
+X_position = 
+X_speed = 
+X = np.concatenate(
+X
+```
+</div>
+
+
 ```{code-cell} ipython3
 :tag: [render-presenter]
 
@@ -326,15 +336,6 @@ basis.compute_features(position, speed)
 X = basis.compute_features(position, speed)
 X
 ```
-
-<div class="render-user">
-```{code-cell} ipython3
-X_position = 
-X_speed = 
-X = np.concatenate(
-X
-```
-</div>
 
 <div class="render-user render-presenter">
 
@@ -356,6 +357,15 @@ As we've done before, we can now use the Poisson GLM from NeMoS to learn the com
 
 </div>
 
+<div class="render-user">
+```{code-cell} ipython3
+# define the model
+glm =
+# fit
+glm.fit(
+```
+</div>
+
 ```{code-cell} ipython3
 :tag: [render-presenter]
 
@@ -368,14 +378,6 @@ glm = nmo.glm.PopulationGLM(
 glm.fit(X, count)
 ```
 
-<div class="render-user">
-```{code-cell} ipython3
-# define the model
-glm =
-# fit
-glm.fit(
-```
-</div>
 
 ### Prediction
 
@@ -386,6 +388,16 @@ Let's check first if our model can accurately predict the tuning curves we displ
 - Use `predict` to check whether our GLM has captured each neuron's speed and position tuning.
 - Remember to convert the predicted firing rate to spikes per second!
 
+</div>
+
+<div class="render-user">
+```{code-cell} ipython3
+# predict the model's firing rate
+predicted_rate =
+# compute the position and speed tuning curves using the predicted firing rate.
+glm_tuning_pos = 
+glm_tuning_speed = 
+```
 </div>
 
 ```{code-cell} ipython3
@@ -402,15 +414,6 @@ glm_tuning_pos = nap.compute_tuning_curves(predicted_rate, position, bins=50, ep
 glm_tuning_speed = nap.compute_tuning_curves(predicted_rate, speed, bins=30, epochs=speed.time_support, feature_names=["speed"])
 ```
 
-<div class="render-user">
-```{code-cell} ipython3
-# predict the model's firing rate
-predicted_rate =
-# compute the position and speed tuning curves using the predicted firing rate.
-glm_tuning_pos = 
-glm_tuning_speed = 
-```
-</div>
 
 <div class="render-user render-presenter">
 
