@@ -473,7 +473,7 @@ plot_raster_psth(peri_white, selected_units, "white", n_units=len(peri_white))
 
 As we've seen throughout this workshop, it is important to avoid overfitting your model. We've covered two strategies for doing so: either separate your dataset into train and test subsets or set up a cross-validation scheme. Pick one of these approaches and use it when fitting your GLM model in the next section.
 
-You might find it helpful to refer back to the [](sklearn) notebook and / or to use the following pynapple functions: {func}`~pynapple.IntervalSet.set_diff`, {func}`~pynapple.IntervalSet.union`, {func}`~pynapple.TsGroup.restrict` (see [](phase-precess-cv)).
+You might find it helpful to refer back to the [advanced nemos](sklearn-cv) notebook and / or to use the following pynapple functions: {func}`~pynapple.IntervalSet.set_diff`, {func}`~pynapple.IntervalSet.union`, {func}`~pynapple.TsGroup.restrict` (see [phase precession notebook](phase-precess-cv)).
 
 :::{admonition} Hints
 :class: hint
@@ -503,7 +503,7 @@ flashes_train = flashes_train_white.union(flashes_train_black)
 
 <div class="render-all">
 
-In this section, you will use nemos to build a GLM. There are a lot of scientific decisions to be made here, so we suggest starting simple and then adding complexity. Construct a design matrix with a single predictor, using a basis of your choice, then construct, fit, and score your model to a single neuron (remembering to either use your train/test or cross-validation to avoid overfitting). Then add regularization to your GLM. Then return to the beginning and add more predictors. Then fit all the neurons. Then evaluate what basis functions and parameters are best for your predictors. Then use the tricks we covered in [](sklearn) to evaluate whether which predictors are necessary for your model, which are the most important.
+In this section, you will use nemos to build a GLM. There are a lot of scientific decisions to be made here, so we suggest starting simple and then adding complexity. Construct a design matrix with a single predictor, using a basis of your choice, then construct, fit, and score your model to a single neuron (remembering to either use your train/test or cross-validation to avoid overfitting). Then add regularization to your GLM. Then return to the beginning and add more predictors. Then fit all the neurons. Then evaluate what basis functions and parameters are best for your predictors. Then use the tricks we covered in [the advanced nemos notebook](sklearn-feature-selection) to evaluate whether which predictors are necessary for your model, which are the most important.
 
 You don't have to exactly follow those steps, but make sure you can go from beginning to end before getting too complex.
 
@@ -532,8 +532,8 @@ units_counts = selected_units.count(bin_size, ep=extended_flashes)
 <div class="render-all">
 
 - Decide on feature(s).
-- Decide on basis. (Hint: review the [current injection](current-inj-basis) or [place cell](sklearn) notebooks.)
-- Construct design matrix. (Hint: review the [place cell](sklearn) notebook.)
+- Decide on basis. (Hint: review the [current injection](current-inj-basis) or [place cell](sklearn-basis) notebooks.)
+- Construct design matrix. (Hint: review the [place cell](basis_eval_place_cells) notebook.)
 
 :::{admonition} What features should I include?
 :class: hint dropdown
@@ -678,9 +678,9 @@ X_train = additive_basis.compute_features(
 
 <div class="render-all">
 
-- Decide on regularization. (Hint: review Edoardo's presentation and the [place cell](sklearn) notebook.)
-- Initialize GLM. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn) notebooks.)
-- Call fit. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn) notebooks.)
+- Decide on regularization. (Hint: review Edoardo's presentation and the [place cell](sklearn-cv) notebook.)
+- Initialize GLM. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn-cv) notebooks.)
+- Call fit. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn-cv) notebooks.)
 - Visualize result on PSTHs. (Note that you should use {func}`~pynapple.process.perievent.compute_perievent_continuous` and the model predictions here! Otherwise, this looks very similar to our PSTH calculation above.)
 
 </div>
@@ -838,7 +838,7 @@ plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_
 <div class="render-all">
 
 - We trained on the train set, so now we score on the test set. (Or use cross-validation.)
-- Get a score for your model that you can use to compare across the modeling choices outlined above. (Hint: refer back to the [current injection](current-inj-score) or [place cell](sklearn) notebook.)
+- Get a score for your model that you can use to compare across the modeling choices outlined above. (Hint: refer back to the [current injection](current-inj-score) or [place cell](sklearn-cv) notebook.)
 
 </div>
 
@@ -860,7 +860,7 @@ print(score)
 
 - Go back to the beginning of [this section](visual-glm) and try to improve your model's performance (as reflected by increased score).
 - Keep track of what you've tried and their respective scores. 
-    - You can do this by hand, but constructing a [pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html), as we've seen in [](sklearn), is useful:
+    - You can do this by hand, but constructing a [pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html), as we've seen in the [advanced nemos notebook](sklearn-cv), is useful:
 
 </div>
 

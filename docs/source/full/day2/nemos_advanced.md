@@ -296,6 +296,7 @@ print("Are the design matrices equivalent?", np.all(X.d == X_numpy.d))
 
 ## Scikit-learn
 
+(sklearn-cv)=
 ### How to know when to regularize?
 
 In the [head direction](./head_direction.md) notebook, we fit the all-to-all connectivity of the head-tuning dataset using the Ridge regularizer, and we learned that regularization can combat overfitting. What we didn't show is how to choose a proper regularizer. Generally, too much regularization leads to underfitting, i.e. the model is too simple and doesn't capture the neural variability well. To little regularization may overfit, especially when we have a large number of parameters, i.e. out model will capture both signal and noise. This is what we saw in the head direction notebook when we used the raw spike history as predictor. 
@@ -392,6 +393,7 @@ pd.DataFrame(cv.cv_results_)
 The most informative for us is the `'mean_test_score'` key, which shows the average of `glm.score` on each test-fold. Thus, higher is better, and we can see that the UnRegularized model performs better.
 
 
+(sklearn-basis)=
 ### Select basis
 
 We can do something similar to select the basis. In the above example, I just told you which basis function to use and how many of each. But, in general, you want to select those in a reasonable manner. Cross-validation to the rescue!
@@ -761,7 +763,7 @@ We then visualize the predictions of `best_estim` the same as before.
 visualize_model_predictions(best_estim, transformer_input)
 ```
 
-
+(sklearn-feature-selection)=
 ## Feature selection
 
 Now, finally, we understand almost enough about how scikit-learn works to figure out whether both position and speed are necessary inputs, i.e., to do feature selection. 
