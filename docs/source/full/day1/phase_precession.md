@@ -246,18 +246,31 @@ ax.legend([l1[0], l2[0]], ["animal position", "forward run epochs"])
 
 This plot confirms that positions are only recorded while the animal is moving along the track. Additionally, it is clear that the intervals in `forward_ep` capture only perios when the animal's position is increasing, during forward runs.
 
+We'll save out the following variables that we'll need throughout the notebook.
+
+```{code-cell} ipython3
+position = data["position"]
+lfp = data["eeg"][:,0]
+spikes = data["units"]
+forward_ep = data["forward_ep"]
+```
+
+***
 ## Restricting the data
 
-<div class="render-all">
-    
 For the following exercises, we'll only focus on periods when the animal is awake and running. We can get this information from `position`.
 
 **1. Save out the time support of position, which will give us the epoch during which the animal is awake.**
 
 </div>
 
+<div class="render-user">
 ```{code-cell} ipython3
-position = data["position"]
+awake_ep = 
+```
+</div>
+
+```{code-cell} ipython3
 awake_ep = position.time_support
 awake_ep
 ```
@@ -271,12 +284,11 @@ You may have noticed many `nan` values for position during the awake period; the
 
 <div class="render-user">
 ```{code-cell} ipython3
-forward_ep =
+# restrict position and check for nans
 ```
 </div>
 
 ```{code-cell} ipython3
-forward_ep = data["forward_ep"]
 np.any(np.isnan(position.restrict(forward_ep)))
 ```
 
@@ -293,7 +305,8 @@ What if we want *all* movement epochs, not just forward runs? We can derive this
 <div class="render-user">
 ```{code-cell} ipython3
 # drop nan values
-pos_good = 
+# save all run epochs in the following variable
+run_ep = 
 ```
 </div>
 
@@ -329,13 +342,7 @@ Now, when extracting the LFP, spikes, and position, we can use `restrict()` with
 
 </div>
 
-```{code-cell} ipython3
-:tags: [render-all]
-
-lfp = data["eeg"][:,0].restrict(awake_ep)
-spikes = data["units"].restrict(awake_ep)
-position = data["position"].restrict(awake_ep)
-```
++++
 
 ***
 
@@ -357,9 +364,9 @@ ex_position =
 </div>
 
 ```{code-cell} ipython3
-ex_run_ep = nap.IntervalSet(start=forward_ep[9].start, end=forward_ep[9].end+2)
-ex_lfp_run = lfp.restrict(ex_run_ep)
-ex_position = position.restrict(ex_run_ep)
+ex_ep = nap.IntervalSet(start=forward_ep[9].start, end=forward_ep[9].end+2)
+ex_lfp = lfp.restrict(ex_ep)
+ex_position = position.restrict(ex_ep)
 ```
 
 <div class="render-all">
@@ -374,7 +381,7 @@ Let's plot the example LFP trace and anmimal position. Plotting `Tsd` objects wi
 fig, axs = plt.subplots(2, 1, constrained_layout=True, figsize=(10, 4), sharex=True)
 
 # plot LFP
-axs[0].plot(ex_lfp_run)
+axs[0].plot(ex_lfp)
 axs[0].set_title("Local Field Potential on Linear Track")
 axs[0].set_ylabel("LFP (a.u.)")
 
@@ -429,31 +436,22 @@ We can now compute the wavelet transform on our LFP data during the example run 
 <div class="render-user">  
 ```{code-cell} ipython3
 sample_rate = 1250
-cwt_run =
+ex_cwt =
 ```
 </div>
 
 ```{code-cell} ipython3
 sample_rate = 1250
-cwt_run = nap.compute_wavelet_transform(ex_lfp_run, freqs, fs=sample_rate)
+ex_cwt = nap.compute_wavelet_transform(ex_lfp, freqs, fs=sample_rate)
 ```
 
-<div class="render-all">
-
-If `fs` is not provided, it can be inferred from the time series `rate` attribute.
-
-</div>
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-print(ex_lfp_run.rate)
-```
+:::{admonition} Note
+:class: note render-all
+If `fs` is not provided, it can be inferred from the time series `rate` attribute, e.g. `ex_lfp.rate`. However, while inferred rate is close to the true sampling rate, it can introduce a small floating-point error. Therefore, it is better to supply the true sampling rate when it is known.
+:::
 
 <div class="render-all">
     
-The inferred rate is close to the true sampling rate, but it can introduce a small floating-point error. Therefore, it is better to supply the true sampling rate when it is known.
-
 We can visualize the results by plotting a heat map of the calculated wavelet scalogram.
 
 </div>
@@ -464,13 +462,13 @@ We can visualize the results by plotting a heat map of the calculated wavelet sc
 fig, axs = plt.subplots(2, 1, figsize=(10,4), constrained_layout=True, height_ratios=[1.0, 0.3], sharex=True)
 fig.suptitle("Wavelet Decomposition")
 
-amp = np.abs(cwt_run.values)
-cax = axs[0].pcolormesh(cwt_run.t, freqs, amp.T)
+amp = np.abs(ex_cwt.values)
+cax = axs[0].pcolormesh(ex_cwt.t, freqs, amp.T)
 axs[0].set(ylabel="Frequency (Hz)", yscale='log', yticks=freqs[::10], yticklabels=np.rint(freqs[::10]));
 axs[0].minorticks_off()
 fig.colorbar(cax,label="Amplitude")
 
-p1 = axs[1].plot(ex_lfp_run)
+p1 = axs[1].plot(ex_lfp)
 axs[1].set(ylabel="LFP (a.u.)", xlabel="Time(s)")
 axs[1].margins(0)
 ax = axs[1].twinx()
@@ -481,45 +479,11 @@ ax.legend([p1[0], p2[0]],["raw LFP","animal position"])
 
 <div class="render-all">
     
-What you should see isa strong presence of theta in the 6-12Hz frequency band while the animal runs down the track, which dampens during rest.
+You should see a strong presence of theta in the 6-12Hz frequency band while the animal runs down the track, which dampens during rest.
 
 </div>
 
-***
-## Bonus: Additional signal processing methods
-<div class="render-all">
-    
-- `nap.compute_fft`
-  
-</div>
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-fft_amp = np.abs(nap.compute_fft(lfp, fs=sample_rate, norm=True))
-fig, ax = plt.subplots(figsize=(10,4), constrained_layout=True)
-ax.plot(fft_amp[(fft_amp.index >= 1) & (fft_amp.index <= 100)])
-ax.axvspan(6, 12, color="red", alpha=0.1, label = "theta band")
-ax.set(xlabel="Frequency (Hz)", ylabel="Normalized Amplitude (a.u.)", title="FFT amplitude during the awake epoch")
-fig.legend(loc="center")
-```
-
-<div class="render-all">
-    
-- `nap.compute_power_spectral_density`
-  
-</div>
-
-```{code-cell} ipython3
-:tags: [render-all]
-
-power = nap.compute_power_spectral_density(lfp, fs=sample_rate)
-fig, ax = plt.subplots(figsize=(10,4), constrained_layout=True)
-ax.plot(power[(power.index >= 1) & (power.index <= 100)])
-ax.axvspan(6, 12, color="red", alpha=0.1, label = "theta band")
-ax.set(xlabel="Frequency (Hz)", ylabel="Power/Frequency (a.u./Hz)", title="Periodogram during the awake epoch")
-fig.legend(loc="center")
-```
++++
 
 ***
 ## Filtering for theta
@@ -528,12 +492,21 @@ fig.legend(loc="center")
 
 For the remaining exercises, we'll reduce our example epoch to the portion when the animal is running forward along the linear track.
 
-**1. Restrict the LFP and position to epochs when the animal is running forward.**
+**1. Restrict the LFP and position to epochs when the animal is running forward. Additionally, create a new `IntervalSet` for forward run 9 with no padding.**
+</div>
+
+<div class="render-user">  
+```{code-cell} ipython3
+lfp_run = 
+position_run = 
+ex_run_ep =
+```
 </div>
 
 ```{code-cell} ipython3
 lfp_run = lfp.restrict(forward_ep)
 position_run = position.restrict(forward_ep)
+ex_run_ep = nap.IntervalSet(start=forward_ep[9].start, end=forward_ep[9].end)
 ```
 
 <div class="render-all">
@@ -571,7 +544,7 @@ We can visualize the output by plotting the filtered signal with the original si
 :tags: [render-all]
 
 plt.figure(constrained_layout=True, figsize=(10, 3))
-plt.plot(ex_lfp_run, label="raw")
+plt.plot(lfp_run.restrict(ex_run_ep), label="raw")
 plt.plot(theta_band.restrict(ex_run_ep), label="filtered")
 plt.xlabel("Time (s)")
 plt.ylabel("LFP (a.u.)")
@@ -587,19 +560,20 @@ plt.legend();
 In order to examine phase precession in place cells, we need to extract the phase of theta from the filtered signal. We can do this by taking the angle of the [Hilbert transform](https://en.wikipedia.org/wiki/Hilbert_transform).
 
 **1. Use `scipy.signal.hilbert` to perform the Hilbert transform, and  the numpy function `np.angle` to extract the angle. Convert the output angle to a [0, 2pi] range, and store the result in a `Tsd` object.**
-
+- TIP: don't forget to pass the time support!
 </div>
 
 <div class="render-user"> 
 ```{code-cell} ipython3
-phase = 
+# save the Tsd in the following variable
+theta_phase = 
 ```
 </div>
 
 ```{code-cell} ipython3
 phase = np.angle(signal.hilbert(theta_band)) # compute phase with hilbert transform
 phase[phase < 0] += 2 * np.pi # wrap to [0,2pi]
-theta_phase = nap.Tsd(t=theta_band.t, d=phase)
+theta_phase = nap.Tsd(t=theta_band.t, d=phase, time_support=theta_band.time_support)
 theta_phase
 ```
 
@@ -612,10 +586,10 @@ Let's plot the phase on top of the filtered LFP signal.
 ```{code-cell} ipython3
 :tags: [render-all]
 
-fig,axs = plt.subplots(2,1,figsize=(10,4), constrained_layout=True) #, sharex=True, height_ratios=[2,1])
+fig,axs = plt.subplots(2,1,figsize=(10,4), constrained_layout=True, sharex=True)#, height_ratios=[2,1])
 
 ax = axs[0]
-ax.plot(ex_lfp_run)
+ax.plot(lfp_run.restrict(ex_run_ep))
 
 ax = axs[1]
 p1 = ax.plot(theta_phase.restrict(ex_run_ep), color='r')
@@ -658,45 +632,20 @@ We can see that cycle "resets" (i.e. goes from $2\pi$ to $0$) at peaks of the th
 <div class="render-all">
 
 In order to identify phase precession in single units, we need to know their place selectivity. We can find place firing preferences of each unit by using the function `nap.compute_tuning_curves`. This function has the following required inputs:
-- `group`: a `TsGroup` of units for which tuning curves are computed
-- `feature`: a `Tsd` or single-column `TsdFrame` of the feature over which tuning curves are computed (e.g. position)
-- `bins`: the number of bins in which to split the feature values for the tuning curve
+- `data`: a pynapple object containing the data for which tuning curves will be computed, either spike times (`Ts` and `TsGroup`) or continuous data (e.g. calcium transients, `Tsd` or `TsdFrame`)
+- `feature`: a `Tsd` or `TsdFrame` of the feature(s) over which tuning curves are computed (e.g. position)
+- `bins`: similar to the argument for `np.histogram`, this variable can either be the number of bins or the bin edges. For multiple features, you can specify `bins` by providing a list with length equal to the number of features.
 
-First, we'll filter for units that fire at least 1 Hz and at most 10 Hz when the animal is running forward along the linear track. This will select for units that are active during our window of interest and eliminate putative interneurons (i.e. fast-firing inhibitory neurons that don't usually have place selectivity). 
+First, we'll filter for units that fire at least 1 Hz and at most 10 Hz when the animal is running forward along the linear track. This will select for units that are active during our window of interest and eliminate putative interneurons (i.e. fast-firing inhibitory neurons that don't usually have place selectivity). Afterwards, we'll compute the tuning curves for these sub-selected units over position.
 
-</div>
-
-<div class="render-user render-presenter">
-1. Restrict `spikes` to `forward_ep`
+**1. Restrict `spikes` to `forward_ep` and select for units whose rate is at least 1 Hz and at most 10 Hz**
 </div>
 
 
 <div class="render-user">
 ```{code-cell} ipython3
-forward_spikes =
-```
-</div>
-
-<div class="render-presenter">
-```{code-cell} ipython3
-forward_spikes = spikes.restrict(forward_ep)
-```
-</div>
-
-<div class="render-user render-presenter">
-2. Select for units whose rate is at least 1 Hz and at most 10 Hz
-</div>
-
-<div class="render-user">
-```{code-cell} ipython3
+# save the filtered spikes in the following variable
 good_spikes = 
-```
-</div>
-
-<div class="render-presenter">
-```{code-cell} ipython3
-good_units = (forward_spikes.rate >= 1) & (forward_spikes.rate <= 10)
-good_spikes = forward_spikes[good_units]
 ```
 </div>
 
@@ -704,17 +653,9 @@ good_spikes = forward_spikes[good_units]
 good_spikes = spikes[(spikes.restrict(forward_ep).rate >= 1) & (spikes.restrict(forward_ep).rate <= 10)]
 ```
 
-<div class="render-all">
-
-Using these units and the position data, we can compute their place fields using `nap.compute_1d_tuning_curves`. This function will return a `pandas.DataFrame`, where the index is the corresponding feature value, and the column is the unit label. Let's compute this for 50 position bins.
+**2. Compute tuning curves for units in `good_spikes` with respect to forward running position, using 50 position bins.**
 
 </div>
-
-:::{admonition} Tip
-:class: tip render-all
-
-The reason `nap.compute_1d_tuning_curves` returns a `pandas.DataFrame` and not a Pynapple object is because the index corresponds to the *feature*, where all Pynapple objects assume the index is *time*.
-:::
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -723,12 +664,24 @@ place_fields =
 </div>
 
 ```{code-cell} ipython3
-place_fields = nap.compute_tuning_curves(good_spikes, pos_good, 50, feature_names=["position"])
+place_fields = nap.compute_tuning_curves(good_spikes, position_run, 50, feature_names=["position"])
 ```
 
 <div class="render-all">
 
-We can use a subplot array to visualize the place fields of many units simultaneously. Let's do this for the first 50 units.
+This function returns tuning curves as an `xarray.DataArray`, with coordinates for unit (first dimension) and position (second dimension). An `xarray.DataArray` object provides convenient tools for plotting and other manipulations, and scales well for tuning curves with more than 1 feature. 
+
+</div>
+
+:::{admonition} Tip
+:class: tip render-all
+
+The reason `nap.compute_tuning_curves` returns a `xarray.DataArray` and not a Pynapple object is because the array elements no longer correspont to *time*, which Pynapple objects require.
+:::
+
+<div class="render-all">
+
+We can use the `xarray.DataArray` `plot` method to easily plot each unit.
 
 </div>
 
@@ -740,23 +693,19 @@ from scipy.ndimage import gaussian_filter1d
 # smooth the place fields so they look nice
 place_fields.data = gaussian_filter1d(place_fields.data, 1, axis=-1)
 
-p = place_fields[25:50].plot(x="position", col="unit", col_wrap=5, size=1.2)
+p = place_fields.plot(x="position", col="unit", col_wrap=5, size=1.2)
 p.set_ylabels("firing rate (Hz)")
 ```
 
 We can see spatial selectivity in each of the units; across the population, we have firing fields tiling the entire linear track. 
 
-<div class="render-presenter">
-- note representations cover entire track
-</div>
-
 ***
 ## Visualizing phase precession within a single unit
-
+<div class="render-all">
+    
 As an initial visualization of phase precession, we'll look at a single traversal of the linear track. First, let's look at how the timing of an example unit's spikes lines up with the LFP and theta. To plot the spike times on the same axis as the LFP, we'll use the pynapple object's method `value_from` to align the spike times with the theta amplitude. For our spiking data, this will find the amplitude closest in time to each spike. Let's start by applying `value_from` on unit 177, who's place field is cenetered on the linear track, using `theta_band` to align the amplityde of the filtered LFP.
 
-<div class="render-user render-presenter">
-First, let's look at how an example unit fires with respect to the filtered LFP. Using the pynapple object method `value_from`, we can find the value of `theta_band` corresponding to each spike time. Let's do this for unit 177, who's place field is cenetered on the linear track.
+**1. Use the pynapple object method `value_from` to find the value of `theta_band` corresponding to each spike time from unit 177.**
 </div>
 
 <div class="render-user">  
@@ -781,7 +730,7 @@ Let's plot `spike_theta` on top of the LFP and filtered theta, as well as visual
 :tags: [render-all]
 
 fig,axs = plt.subplots(2, 1, figsize=(10,4), constrained_layout=True, sharex=True)
-axs[0].plot(ex_lfp_run, alpha=0.5, label="raw LFP")
+axs[0].plot(lfp_run.restrict(ex_run_ep), alpha=0.5, label="raw LFP")
 axs[0].plot(theta_band.restrict(ex_run_ep), color="slateblue", label="filtered theta")
 axs[0].plot(spike_theta.restrict(ex_run_ep), 'o', color="orange", label="spike times")
 axs[0].set(ylabel="LFP (a.u.)")
@@ -793,14 +742,12 @@ axs[1].set(ylabel="Position (cm)", xlabel="Time (s)")
 axs[1].legend()
 ```
 
-As expected, unit 177 will preferentially spike (orange dots) as the animal runs through the middle of the track (thick green). You may be able to notice that the spikes are firing at specific points in each theta cycle, and these points are systematically changing over time. At first, spikes fire along the rising edge of a cycle, afterwards firing earlier towards the trough, and finally firing earliest along the falling edge.
+<div class="render-all">
+As the animal runs through unit 177's place field (thick green), the unit spikes (orange dots) at specific points along the theta cycle dependent on position: starting at the rising edge, moving towards the trough, and ending at the falling edge.
 
 We can exemplify this pattern by plotting the spike times aligned to the phase of theta. We'll want the corresponding phase of theta at which the unit fires as the animal is running down the track, which we can again compute using the method `value_from`. 
 
-<div class="render-user render-presenter">
-As the animal runs through unit 177's place field (thick green), the unit spikes (orange dots) at specific points along the theta cycle dependent on position: starting at the rising edge, moving towards the trough, and ending at the falling edge.
-
-We can exemplify this pattern by plotting the spike times aligned to the phase of theta. Let's compute the phase at which each spike occurs by using `value_from` with `theta_phase`. 
+**2. Compute the value of `theta_phase` corresponding to each spike time from unit 177.**
 </div>
 
 <div class="render-user">  
@@ -839,14 +786,13 @@ axs[2].set(ylabel="Position (cm)", xlabel="Time (s)", title="Animal position")
 axs[2].legend()
 ```
 
-You should now see a negative trend in the spike phase as the animal moves along the track. This phemomena is what is called phase precession: as an animal runs through the place field of a single unit, that unit will spike at *late* phases of theta (higher radians) in *earlier* positions in the field, and fire at *early* phases of theta (lower radians) in *late* positions in the field.
+<div class="render-all">
+    
+We now see a negative trend in the spike phase as the animal moves through unit 177's place field. This phemomena is known as phase precession: the phase at which a unit spikes *precesses* (gets earlier) as the animal runs through that unit's place field. Explicitly, that unit will spike at *late* phases of theta (higher radians) in *earlier* positions in the field, and fire at *early* phases of theta (lower radians) in *late* positions in the field.
 
-We can observe this phenomena on average across all runs by relating the spike phase to the spike position. Similar to before, we'll use the pynapple object method `value_from` to additionally find the animal position closest in time to each spike.
+We can observe this phenomena on average across the session by relating the spike phase to the spike position. 
 
-<div class="render-user render-presenter">
-We now see a negative trend in the spike phase as the animal moves through unit 177's place field, indicative of this unit *phase precessing*. 
-
-We can observe this phenomena on average across the session by relating the spike phase to the spike position. Try computing the spike position from what we've learned so far.
+**3. Compute the position corresponding to each spike for example unit 177.**
 </div>
 
 <div class="render-user">
@@ -856,7 +802,7 @@ spike_position =
 </div>
 
 ```{code-cell} ipython3
-spike_position = spikes[unit].value_from(position)
+spike_position = spikes[unit].value_from(position_run)
 ```
 
 <div class="render-all">
@@ -874,19 +820,20 @@ plt.ylabel("Phase (rad)")
 plt.xlabel("Position (cm)")
 ```
 
+<div class="render-all">
+    
 Similar to what we saw in a single run, there is a negative relationship between theta phase and field position, characteristic of phase precession.
-
-<div class="render-presenter">
-- note negative relationship
 </div>
 
 ***
 ## Computing 2D tuning curves: position vs. phase
 <div class="render-all">
 
-The scatter plot above can be similarly be represented as a 2D tuning curve over position and phase. We can compute this using the function `nap.compute_2d_tuning_curves`. This function requires the same inputs as `nap.compute_1d_tuning_curves`, except now the second input, `features`, must be a 2-column `TsdFrame` containing the two target features.
+The scatter plot above can be similarly be represented as a 2D tuning curve over position and phase. We can compute this using the same function, `nap.compute_tuning_curves`, but now passing second input, `features`, as a 2-column `TsdFrame` containing the two target features.
 
-To use this function, we'll need to combine `position` and `theta_phase` into a `TsdFrame`. To do this, both variables must have the same length. We can achieve this by upsampling `position` to the length of `theta_phase` using the pynapple object method `interpolate`. This method will linearly interpolate new position samples between existing position samples at timestamps given by another pynapple object, in our case by `theta_phase`.
+To do this, we'll need to combine `position_run` and `theta_phase` into a `TsdFrame`. For this to work, both variables must have the same length. We can achieve this by upsampling `position` to the length of `theta_phase` using the pynapple object method `interpolate`. This method will linearly interpolate new position samples between existing position samples at timestamps given by another pynapple object, in our case by `theta_phase`. Once they're the same length, they can be combined into a single `TsdFrame` and used to compute 2D tuning curves.
+
+**1. Interpolate `position_run` to the time points of `theta_phase`.**
 
 </div>
 
@@ -897,7 +844,7 @@ upsampled_pos =
 </div>
 
 ```{code-cell} ipython3
-upsampled_pos = pos_good.restrict(position_ep).interpolate(theta_phase.restrict(position_ep))
+upsampled_pos = position_run.interpolate(theta_phase)
 ```
 
 <div class="render-all">
@@ -918,88 +865,61 @@ axs[1].set(ylabel="Position (cm)", xlabel="Time (s)", title="Upsampled position 
 
 <div class="render-all">
 
-We can now stack `upsampled_pos` and `theta_phase` into a single array.
+**2. Stack `upsampled_pos` and `theta_phase` together into a single `TsdFrame`**
 
 </div>
 
 <div class="render-user">  
 ```{code-cell} ipython3
-feats = 
+# store the resulting TsdFrame into the following variable
+features = 
 ```
 </div>
 
 ```{code-cell} ipython3
-feats = np.stack((upsampled_pos.values, theta_phase.restrict(position_ep).values))
-feats.shape
-```
-
-<div class="render-all">
-
-Using `feats`, we can define a `TsdFrame` using the time index from `theta_phase` and the time support from `upsampled_pos`. Note that `feats` has the wrong shape; we want time in the first dimension, so we'll need to pass its transpose.
-
-</div>
-
-<div class="render-user">
-```{code-cell} ipython3
-features =
-```
-</div>
-
-```{code-cell} ipython3
+feats = np.stack((upsampled_pos.values, theta_phase.values))
 features = nap.TsdFrame(
-    t=theta_phase.restrict(position_ep).t,
+    t=theta_phase.t,
     d=np.transpose(feats),
     time_support=upsampled_pos.time_support,
     columns=["position", "phase"],
 )
+features
 ```
 
 <div class="render-all">
 
-Now we have what we need to compute 2D tuning curves. Let's apply `nap.compute_2d_tuning_curves` on our reduced group of units, `good_spikes`, using 20 bins for each feature. 
+**3. Apply `nap.compute_tuning_curves` for `features` on our subselected group of units, `good_spikes`, using 50 bins for position and 20 bins for theta phase.**
 
-This function will return two outputs:
-1. A dictionary of the 2D tuning curves, where dictionary keys correspond to the unit label
-2. A list with length 2 containing the feature bin centers
-   
 </div>
 
 <div class="render-user">
 ```{code-cell} ipython3
-tuning_curves, [pos_x, phase_y] =
+tuning_curves =
 ```
 
 </div>
 
 ```{code-cell} ipython3
-tuning_curves = nap.compute_tuning_curves(good_spikes, features, 20)
+tuning_curves = nap.compute_tuning_curves(good_spikes, features, bins=[50,20])
 ```
 
 <div class="render-all">
 
-We can plot the first 50 2D tuning curves and visualize how many of these units are phase precessing.
+We can plot 2D tuning curves for each unit and visualize how many of these units are phase precessing.
 
 </div>
 
 ```{code-cell} ipython3
 :tags: [render-all]
 
-# fig, axs = plt.subplots(10, 5, figsize=(10, 15), sharex=True, constrained_layout=True)
-# for i, f in enumerate(list(tuning_curves.keys())[:50]):
-#     idx = np.unravel_index(i, axs.shape)
-#     axs[idx].pcolormesh(pos_x, phase_y, tuning_curves[f])
-#     axs[idx].set_title(f)
-
-# fig.supylabel("Phase (rad)")
-# fig.supxlabel("Position (cm)");
-
-tuning_curves[:50].plot(x="position", y="phase", col="unit", col_wrap=5, size=1.5, aspect=1.5)
+tuning_curves.plot(x="position", y="phase", col="unit", col_wrap=5, size=1.5, aspect=1.5)
 ```
+
+<div class="render-all">
 
 Many of the units display a negative relationship between position and phase, characteristic of phase precession.
 
-<div class="render-presenter">
-- point out some of the precessing units
 </div>
 
 ***
@@ -1007,16 +927,12 @@ Many of the units display a negative relationship between position and phase, ch
 
 <div class="render-all">
 
-Next we'll do a popular analysis in the rat hippocampal sphere: Bayesian decoding. This analysis is an elegent application of Bayes' rule in predicting the animal's location (or other behavioral variables) from neural activity at some point in time. 
+Next we'll do a popular analysis in the rat hippocampus sphere: Bayesian decoding. This analysis is an elegent application of Bayes' rule in predicting the animal's location (or other behavioral variables) given neural activity at some point in time. Refer to the dropdown box below for a more in-depth explanation.
 
 </div>
 
-### Background
-
-<div class="render-user render-presenter">
-For a more in-depth background on Bayesian decoding, see the full version of this notebook online.
-</div>
-
+:::{admonition} Background: Bayesian decoding
+:class: render-all dropdown
 Recall Bayes' rule, written here in terms of our relevant variables:
 
 $$P(position|spikes) = \frac{P(position)P(spikes|position)}{P(spikes)}$$
@@ -1049,19 +965,19 @@ $$P(spikes) = \sum_{position}P(position,spikes) = \sum_{position}P(position)P(sp
 Another way of putting it is $P(spikes)$ is the normalization factor such that $\sum_{position} P(position|spikes) = 1$, which is achived by dividing the numerator by its sum.
 
 If this method looks daunting, we have some good news: pynapple has it implemented already in the function `nap.decode_1d` for decoding a single dimension (or `nap.decode_2d` for two dimensions). All we'll need are the spikes, the tuning curves, and the width of the time window $\tau$.
+:::
 
-### ASIDE: Cross-validation
 
+### Aside: Cross-validation
+
+<div class="render-all">
+    
 Generally this method is cross-validated, which means you train the model on one set of data and test the model on a different, held-out data set. For Bayesian decoding, the "model" refers to the model *likelihood*, which is computed from the tuning curves. 
 
-We want to decode the example run we've been using throughout this exercise; therefore, our training set should omit this run before computing the tuning curves. We can do this by using the IntervalSet method `set_diff`, to take out the example run epoch from all run epochs. Next, we'll restrict our data to these training epochs and re-compute the place fields using `nap.compute_1d_tuning_curves`. We'll also apply a Gaussian smoothing filter to the place fields, which will smooth our decoding results down the line.
+If we want to decode an example run down the track, our training set should omit this run before computing the tuning curves. We can do this by using the IntervalSet method `set_diff`, to take out the example run epoch from all run epochs. Next, we'll restrict our data to these training epochs and re-compute the place fields using `nap.compute_tuning_curves`. We'll also apply a Gaussian smoothing filter to the place fields, which will smooth our decoding results down the line.
 
-:::{admonition} Important
-:class: important render-user render-presenter
-
-Generally this method is cross-validated, which means you train the model on one set of data and test the model on a different, held-out data set. For Bayesian decoding, the "model" refers to the model *likelihood*, which is computed from the tuning curves. Run the code below if you want to use a separate training set to compute the tuning curves.
-
-:::
+The code cell below will do these steps for you.
+</div>
 
 ```{code-cell} ipython3
 :tags: [render-all]
@@ -1076,41 +992,21 @@ place_fields = nap.compute_tuning_curves(spikes, position_train, bins=50, featur
 place_fields.data = gaussian_filter1d(place_fields.data, 1, axis=-1)
 ```
 
-### Run 1D decoder
+### Run Bayesian decoder
 
 <div class="render-all">
 
-With a single dimension in our tuning curves (position), we can apply Bayesian decoding using the function `nap.decode_1d`. This function requires the following inputs:
-- `tuning_curves`: a `pandas.DataFrame`, computed by `nap.compute_1d_tuning_curves`, with the tuning curves relative to the feature being decoded
-- `group`: a `TsGroup` of spike times, or a `TsdFrame` of spike counts, for each unit in `tuning_curves`.
-- `ep`: an `IntervalSet` containing the epoch to be decoded
+We can decode any number of features using the function `nap.decode_bayes`. This function requires the following inputs:
+- `tuning_curves`: an `xarray.DataArray`, computed by `nap.compute_tuning_curves`, with the tuning curves relative to the feature(s) being decoded
+- `data`: a `TsGroup` of spike times, or a `TsdFrame` of spike counts, for each unit in `tuning_curves`.
+- `epochs`: an `IntervalSet` containing the epochs to be decoded
 - `bin_size`: the time length, in seconds, of each decoded bin. If `group` is a `TsGroup` of spike times, this determines how the spikes are binned in time. If `group` is a `TsdFrame` of spike counts, this should be the bin size used for the counts.
 
 This function will return two outputs:
 - a `Tsd` containing the decoded feature at each decoded time point
-- a `TsdFrame` containing the decoded probability of each feature value at each decoded time point, where the column names are the corresponding feature values
-
-</div>
-
-<div class="render-user render-presenter">
-To increase decoder accuracy, we'll want to use the tuning curves of all the units in `spikes`. Recompute `place_fields` using `nap.compute_1d_tuning_curves` for all available units. (You can skip this if you're using the cross-validated `place_fields` from above.)
-</div>
-
-<div class="render-user">
-```{code-cell} ipython3
-place_fields =
-```
-</div>
-
-<div class="render-presenter">
-```{code-cell} ipython3
-place_fields = nap.compute_1d_tuning_curves(spikes, position, nb_bins=50)
-```
-</div>
-
-<div class="render-all">
+- a `TsdFrame` or `TsdTensor` containing the decoded probability of each feature value at each decoded time point
     
-Let's decode position during `ex_run_ep` using 40 ms time bins.
+**1. Use `nap.decode_bayes` to decode position during `ex_run_ep` using 40 ms time bins.**
 
 </div>
 
@@ -1142,24 +1038,12 @@ fig.colorbar(c, label="decoded probability")
 ax.set(xlabel="Time (s)", ylabel="Position (cm)", );
 ```
 
-While the decoder generally follows the animal's true position, there is still a lot of error in the decoder, especially later in the run. In the next section, we'll show how to improve our decoder estimate.
-
-<div class="render-presenter">
-- note decoder error
-</div>
-
-### Smooth spike counts
-
 <div class="render-all">
-
-One way to improve our decoder is to supply smoothed spike counts to `nap.decode_1d`. We can smooth the spike counts by convolving them with a kernel of ones; this is equivalent to applying a moving sum to adjacent bins, where the length of the kernel is the number of adjacent bins being added together. You can think of this as counting spikes in a *sliding window* that shifts in shorter increments than the window's width, resulting in bins that overlap. This combines the accuracy of using a wider time bin with the temporal resolution of a shorter time bin.
-
-</div>
+    
+While the decoder generally follows the animal's true position, there is still a lot of error in the decoder, especially later in the run. We can improve the decoder error by smoothing the spike counts. `nap.decode_bayes` provides the option to do this for you by specifying `sliding_window_size`, which specifies the width, in number of bins, of a uniform (all ones) kernel to convolve with the spike counts. This is equivalent to applying a moving sum to adjacent bins, where the width of the kernel is the number of adjacent bins being added together. This is equivalent to counting spikes in a *sliding window* that shifts in shorter increments than the window's width, resulting in bins that overlap. This combines the accuracy of using a wider time bin with the temporal resolution of a shorter time bin.
 
 For example, let's say we want a sliding window of $200 ms$ that shifts by $40 ms$. This is equivalent to summing together 5 adjacent $40 ms$ bins, or convolving spike counts in $40 ms$ bins with a length-5 array of ones ($[1, 1, 1, 1, 1]$). Let's visualize this convolution.
 
-<div class="render-presenter">
-- example: 200ms sliding window that shifts by 40ms
 </div>
 
 ```{code-cell} ipython3
@@ -1169,53 +1053,11 @@ ex_counts = spikes[unit].restrict(ex_run_ep).count(0.04)
 workshop_utils.animate_1d_convolution(ex_counts, np.ones(5), tsd_label="original counts", kernel_label="moving sum", conv_label="convolved counts")
 ```
 
+<div class="render-all">
+    
 The count at each time point is computed by convolving the kernel (yellow), centered at that time point, with the original spike counts (blue). For a length-5 kernel of ones, this amounts to summing the counts in the center bin with two bins before and two bins after (shaded green, top). The result is an array of counts smoothed out in time (green, bottom).
 
-Let's compute the smoothed counts for all units. If we want a sliding window of $200 ms$ shifted by $40 ms$, we'll need to first count the spikes in $40 ms$ bins. We only need the counts for the epoch we want to decode, so we will use spikes restricted to `ep_run_ep`.
-
-<div class="render-presenter">
-- convolve kernel (yellow) centered at time point with original counts (blue)
-- sum counts in center bin with two before and two after (shaded green)
-- result is smoothed counts (bottom green)
-</div>
-
-<div class="render-user render-presenter">
-Let's compute the smoothed counts for all units.
-
-1. On spike times restricted to `ep_run_ep`, count spikes in $40 ms$ bins using the pynapple object method `count`.
-</div>
-
-<div class="render-user">
-```{code-cell} ipython3
-counts = 
-```
-</div>
-
-```{code-cell} ipython3
-counts = spikes.restrict(ex_run_ep).count(0.04)
-```
-
-Now, we need to sum each set of 5 adjacent bins to get our full window width of $200 ms$. We can compute this by using the pynapple object method `convolve` with the kernel `np.ones(5)`.
-
-<div class="render-user render-presenter">
-2. Convolve the counts with the kernel `np.ones(5)` using the pynapple object method `convolve`.
-</div>
-
-<div class="render-user">
-```{code-cell} ipython3
-smth_counts = 
-```
-</div>
-
-```{code-cell} ipython3
-smth_counts = counts.convolve(np.ones(5))
-```
-
-<div class="render-all">
-
-Now we can use `nap.decode_1d` again with our smoothed counts in place of the raw spike times. Note that the bin size we'll want to provide is $200 ms$, since this is the true width of each bin.
-
-</div>
+**2. Decode the same run as above, now using sliding window size of 5 bins.**
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -1224,7 +1066,7 @@ smth_decoded_position, smth_decoded_prob =
 </div>
 
 ```{code-cell} ipython3
-smth_decoded_position, smth_decoded_prob = nap.decode_bayes(place_fields, smth_counts, ex_run_ep, bin_size=0.2)
+smth_decoded_position, smth_decoded_prob = nap.decode_bayes(place_fields, spikes, ex_run_ep, bin_size=0.04, sliding_window_size=5)
 ```
 
 <div class="render-all">
@@ -1245,59 +1087,22 @@ fig.colorbar(c, label="decoded probability")
 ax.set(xlabel="Time (s)", ylabel="Position (cm)", );
 ```
 
-This gives us a much closer approximation of the animal's true position.
-
-<div class="render-presenter">
-- improved approximation
-</div>
-
-### Decoding theta sequences
-
 <div class="render-all">
+This gives us a much closer approximation of the animal's true position.
 
 Units phase precessing together creates fast, spatial sequences around the animal's true position. We can reveal this by decoding at an even shorter time scale, which will appear as smooth errors in the decoder.
 
+**3. Decode again using a smaller bin size of $10 ms$.**
+
 </div>
-
-Let's repeat what we did above, but now with a $50 ms$ sliding window that shifts by $10 ms$.
-
-<div class="render-user render-presenter">
-1. Get smoothed counts for a sliding window of $50 ms$ shifted by $10 ms$.
-</div>
-
-<div class="render-user">
-```{code-cell} ipython3
-smth_counts = 
-```
-</div>
-
-<div class="render-presenter">
-```{code-cell} ipython3
-counts = spikes.restrict(ex_run_ep).count(0.01)
-smth_counts = counts.convolve(np.ones(5))
-```
-</div>
-
-<div class="render-user render-presenter">
-2. Use `nap.decode_1d` to get the smoothed decoded position.
-</div>
-
 <div class="render-user">
 ```{code-cell} ipython3
 smth_decoded_position, smth_decoded_prob = 
 ```
 </div>
 
-<div class="render-presenter">
 ```{code-cell} ipython3
-smth_decoded_position, smth_decoded_prob = nap.decode_1d(place_fields, smth_counts, ex_run_ep, bin_size=0.05)
-```
-</div>
-
-```{code-cell} ipython3
-counts = spikes.restrict(ex_run_ep).count(0.01)
-smth_counts = counts.convolve(np.ones(5))
-smth_decoded_position, smth_decoded_prob = nap.decode_bayes(place_fields, smth_counts, ex_run_ep, bin_size=0.05)
+smth_decoded_position, smth_decoded_prob = nap.decode_bayes(place_fields, spikes, ex_run_ep, bin_size=0.01, sliding_window_size=5)
 ```
 
 <div class="render-all">
@@ -1317,19 +1122,15 @@ axs[0].set_ylabel("Position (cm)")
 axs[0].legend([p1[0],p2[0]],["decoded position","true position"])
 fig.colorbar(c, label = "predicted probability")
 
-axs[1].plot(ex_lfp_run)
+axs[1].plot(lfp_run.restrict(ex_run_ep))
 axs[1].plot(theta_band.restrict(ex_run_ep))
 axs[1].set_ylabel("LFP (a.u.)")
 
 fig.supxlabel("Time (s)");
 ```
 
+<div class="render-all">
 The estimated position oscillates with cycles of theta, where each "sweep" is referred to as a "theta sequence". Fully understanding the properties of theta sequences and their role in learning, memory, and planning is an active topic of research in Neuroscience!
-
-<div class="render-presenter">
-- position oscillates within cycles of theta 
-- "sweep" is a "theta sequence"
-- active topic of research
 </div>
 
 ```{code-cell} ipython3
