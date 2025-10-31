@@ -92,4 +92,5 @@ for md in (repo_dir / "docs/source/full").glob("*/*md"):
     user_text = "\n".join(user_text)
     user_text = user_text.replace(title, title + USER_NB_EXPLAIN.format(local_path))
     user_text = user_text.replace(ipynb, user_ipynb)
+    user_text = user_text.replace("no-search:", "")
     user_md.write_text(user_text)
