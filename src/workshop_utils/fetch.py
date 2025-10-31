@@ -11,10 +11,12 @@ NEMOS_FILES = [
 
 DATA_REGISTRY = {
     "Achilles_10252013_EEG.nwb": "a97a69d231e7e91c07e24890225f8fe4636bac054de50345551f32fc46b9efdd",
+    "visual_coding_data.zip": "6041e46a370e9ad09c13a22fac493f237cd8153c598a052f0552b58c6a42c293"
 }
 
 DATA_URLS = {
-    "Achilles_10252013_EEG.nwb": "https://osf.io/2dfvp/download",
+    "Achilles_10252013_EEG.nwb": "https://osf.io/download/2dfvp",
+    "visual_coding_data.zip": "https://osf.io/download/6c7rj",
 }
 
 DATA_ENV = "NEMOS_DATA_DIR"
@@ -46,6 +48,7 @@ def fetch_data(dataset_name, path=None):
     else:
         if path is None:
             path = pooch.os_cache("nemos")
+        processor = pooch.Unzip() if dataset_name.endswith(".zip") else None
 
         manager = pooch.create(
             path=path,
@@ -56,7 +59,7 @@ def fetch_data(dataset_name, path=None):
             env=DATA_ENV,
         )
 
-        return manager.fetch(dataset_name)
+        return manager.fetch(dataset_name, processor=processor)
 
 
 def fetch_all():

@@ -42,7 +42,7 @@ dependencies = [
     'jupyter',
     "jupyterlab<4.3",
     'pillow',
-    'nemos@git+https://github.com/flatironinstitute/nemos.git@fix_plot_coupling',
+    'nemos@git+https://github.com/flatironinstitute/nemos.git@development',
     'pynapple@git+https://github.com/pynapple-org/pynapple.git@dev',
     'click',
     'ipython',
