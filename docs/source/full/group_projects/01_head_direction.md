@@ -9,6 +9,7 @@ kernelspec:
   name: python3
   display_name: Python 3 (ipykernel)
   language: python
+no-search:
 ---
 
 ```{code-cell} ipython3
@@ -489,7 +490,7 @@ What does it mean for the relationship between cells here?
 
 +++
 
-# Fitting a GLM model with Nemos
+## Fitting a GLM model with Nemos
 
 <div class="render-user">
 
