@@ -77,6 +77,8 @@ gallery_scripts = [nb for nb in list(gallery_dir.glob('**/*md'))
                    if 'checkpoint' not in nb.name]
 missing_nb = [f.stem for f in gallery_scripts
               if not any([f.stem == nb.stem.replace('-users', '') for nb in nbs])]
+# index isn't a notebook, so don't check for it
+missing_nb = [f for f in missing_nb if f != "index"]
 if len(missing_nb) == 0:
     print(":white_check_mark: All notebooks found")
 else:

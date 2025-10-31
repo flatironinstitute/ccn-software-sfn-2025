@@ -282,7 +282,7 @@ users/group_projects/*
 
 ```{toctree}
 :titlesonly:
-:caption: Limited notebooks
+:caption: Limited live coding notebooks
 :maxdepth: 1
 users/index.md
 presenters/index.md
