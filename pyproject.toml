@@ -43,7 +43,7 @@ dependencies = [
     "jupyterlab<4.3",
     'pillow',
     'nemos@git+https://github.com/flatironinstitute/nemos.git@development',
-    'pynapple@git+https://github.com/pynapple-org/pynapple.git@dev',
+    'pynapple',
     'click',
     'ipython',
     "scikit-learn",
