@@ -52,6 +52,7 @@ dependencies = [
     "seaborn",
     "pooch",
     "fsspec",
+    "pynaviz[qt]",
 ]
 
 # Configure package discovery for setuptools
