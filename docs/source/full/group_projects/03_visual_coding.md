@@ -479,7 +479,7 @@ You might find it helpful to refer back to the [advanced nemos](sklearn-cv) note
 :::{admonition} Hints
 :class: hint
 
-Throughout this section and the next we'll include hints. They'll either be links back to earlier notebooks from this workshop that show an example of how to do the step in question, or a hint admonition like this, which you can expand to get a hint.
+Throughout the rest of the notebook we'll include hints. They'll either be links back to earlier notebooks from this workshop that show an example of how to do the step in question, or a hint like this, which you can expand to get a hint.
 
 :::
 
@@ -534,6 +534,7 @@ units_counts = selected_units.count(bin_size, ep=extended_flashes)
 
 - Decide on feature(s).
 - Decide on basis. (Hint: review the [current injection](current-inj-basis) or [place cell](sklearn-basis) notebooks.)
+    - If you set the `label` argument for your basis objects, interpreting the output will be easier.
 - Construct design matrix. (Hint: review the [place cell](basis_eval_place_cells) notebook.)
 
 :::{admonition} What features should I include?
