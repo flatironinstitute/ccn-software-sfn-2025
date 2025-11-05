@@ -860,8 +860,11 @@ worst if we needed a finer temporal resolution, such 1ms time bins
 (which would require 800 coefficients instead of 80).
 What can we do to mitigate over-fitting now?
 
+</div>
+
 ### Reducing feature dimensionality
 
+<div class="render-all">
 Let's see how to use NeMoS' `basis` module to reduce dimensionality and avoid over-fitting!
 For history-type inputs, we'll use again the raised cosine log-stretched basis,
 [Pillow et al., 2005](https://www.jneurosci.org/content/25/47/11003).
