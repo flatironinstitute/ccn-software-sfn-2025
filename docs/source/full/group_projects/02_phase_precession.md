@@ -1478,8 +1478,21 @@ workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
 ```{code-cell} ipython3
 position_basis = nmo.basis.BSplineEval(n_basis_funcs=10, label="position")
 speed_basis = nmo.basis.BSplineEval(n_basis_funcs=10, label="speed")
-workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
+fig = workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-15.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-15.png)
+:::
+</div>
 
 <div class="render-all">
     
@@ -1627,8 +1640,21 @@ We can plot the results to compare the model and data tuning curves.
 ```{code-cell} ipython3
 :tags: [render-all]
 
-workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_tuning_pos, glm_tuning_speed);
+fig = workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_tuning_pos, glm_tuning_speed);
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-16.png", bbox_inches="tight")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-16.png)
+:::
+</div>
 
 <div class="render-all">
 

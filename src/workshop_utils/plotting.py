@@ -345,7 +345,7 @@ def plot_head_direction_tuning_model(
 
     # plot raster and heading
     cmap = plt.get_cmap(cmap_label)
-    #unq_angles = np.unique(pref_ang.values)
+    # unq_angles = np.unique(pref_ang.values)
     unq_angles = np.sort(pref_ang.values)
     n_subplots = len(unq_angles)
     relative_color_levs = (unq_angles - unq_angles[0]) / (
@@ -624,8 +624,8 @@ def plot_position_speed_tuning(
     model_position_tuning: Optional[xarray.DataArray] = None,
     model_speed_tuning: Optional[xarray.DataArray] = None,
 ):
-    fig = plt.figure(figsize=(6 * position_tuning.shape[1], 3))
-    gs = plt.GridSpec(1, 2 * position_tuning.shape[1], wspace=0.3, hspace=0.35)
+    fig = plt.figure(figsize=(6 * position_tuning.shape[0], 3), tight_layout=True)
+    gs = plt.GridSpec(1, 2 * position_tuning.shape[0], wspace=0.3, hspace=0.35)
     pos_ax = None
     speed_ax = None
     for i, n in enumerate(position_tuning.unit):
@@ -680,6 +680,7 @@ def plot_pos_speed_bases(position_basis, speed_basis):
         time, kernel = bas.evaluate_on_grid(100)
         ax.plot(time, kernel)
         ax.set_title(t)
+    return fig
 
 
 def visualize_intervals(eps):
@@ -866,7 +867,6 @@ def plot_coupling_filters(
     color_tun = (pref_ang.values - pref_ang.values.min()) / (
         pref_ang.values.max() - pref_ang.values.min()
     )
-
 
     # plot heatmap
     sum_resp = np.sum(responses, axis=2)
