@@ -331,6 +331,11 @@ Some usage notes:
 - I will destroy this instance in 2 weeks. You can download your notebooks to keep them after the fact.
 
 ```{toctree}
+:titlesonly:
+can_you_read.md
+```
+
+```{toctree}
 :glob:
 :caption: Full notebooks
 :titlesonly:

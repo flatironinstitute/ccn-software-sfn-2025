@@ -32,7 +32,7 @@ pipeline {
               pip install .
               NEMOS_DATA_DIR=./data/ python src/workshop_utils/fetch.py
               python ./scripts/strip_text.py
-              make -C docs html O="-T"
+              make -C docs html O="-T -W"
               
               # we move this to a separate directory to reduce the risk of the checkout
               # below clobbering it

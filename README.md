@@ -27,7 +27,7 @@ We have a slack channel for communicating with attendees, if you haven't receive
 
 To build the site locally, clone this repo and install it in a fresh python 3.12 environment (`pip install -e .`). Then run `make -C docs html O="-T"` and open `docs/build/html/index.html` in your browser.
 
-When building the docs, you can use the `RUN_NB` environment variable to limit the notebooks that are executed. To do so, set it to a comma separated list of strings: any notebooks whose name is a substring of one of the strings will run. For example, `RUN_NB=current,head` will run `day1/head_direction.md`, `day2/head_direction.md` and `day2/current_injection.md`.
+When building the docs, you can use the `RUN_NB` environment variable to limit the notebooks that are executed. To do so, set it to a comma separated list of strings: any notebooks whose name is a substring of one of the strings will run. For example, `RUN_NB=current,head` will run `group_projects/01_head_direction.md` and `live_coding/02_current_injection.md`.
 
 ## Group projects
 
@@ -60,6 +60,7 @@ For this to work:
 - The title should be on a line by itself, use `#` (e.g., `# My awesome title`) and be the first such line (so no comments above it).
 - All headers must be markdown-style (using `#`), rather than using `------` underneath them.
 - You may need to place blank newlines before/after any `div` opening or closing. I think if you don't place newlines after the `div` opening, it will consider everything after it part of a markdown block (which is probably not what you want if it's a `{code-cell}`).
+- divs should not cover any headers: if a header happens in the middle of a div, you'll have to close right before hand and open a new one right after (this is because all headers are rendered in all versions).
 
 Full notebook:
 - Will not render any markdown wrapped in a div with `class='render-user'` or `class='render-presenter'` (but will render those wrapped in `class='render-all'`)
@@ -78,6 +79,11 @@ Users version preserves:
 - Only colon-fence blocks (e.g., admonitions) that have the class `render-user` or `render-all`
 - Only markdown wrapped in a `<div class='render-user>` or `<div class='render-all'>`.
 
+## Participants
+
+We build all of the notebooks as a sphinx site, which we can browse. `index.md` is the main way in which participants will view the information present in this repo. They are instructed to clone this repo and run `scripts/setup.py`, which will download all the data, run `scripts/strip_text.py`, and convert the resulting user notebooks to `ipynb` files, placing them in the `notebooks/` directory. This is what users will see on their screen as they work on their notebook.
+
+This means that you should check what these notebooks look like to make sure everything renders correctly. In particular, intersphinx **does not** work here (though it does work on the built website). Thus, you should instead use explicit links to the relevant documentation, where necessary. 
     
 ## binder
 
