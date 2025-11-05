@@ -1455,8 +1455,21 @@ workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
 ```{code-cell} ipython3
 position_basis = nmo.basis.BSplineEval(n_basis_funcs=10, label="position")
 speed_basis = nmo.basis.BSplineEval(n_basis_funcs=10, label="speed")
-workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
+fig = workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-15.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-15.png)
+:::
+</div>
 
 <div class="render-all">
     
@@ -1604,8 +1617,21 @@ We can plot the results to compare the model and data tuning curves.
 ```{code-cell} ipython3
 :tags: [render-all]
 
-workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_tuning_pos, glm_tuning_speed);
+fig = workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_tuning_pos, glm_tuning_speed);
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-16.png", bbox_inches="tight")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-16.png)
+:::
+</div>
 
 <div class="render-all">
 
@@ -1637,7 +1663,3 @@ As an bonus, more open-ended exercise, we can investigate all the scientific dec
 The data in this tutorial comes from [Grosmark, Andres D., and György Buzsáki. "Diversity in neural firing dynamics supports both rigid and learned hippocampal sequences." Science 351.6280 (2016): 1440-1443](https://www.science.org/doi/full/10.1126/science.aad1935).
 
 </div>
-
-```{code-cell} ipython3
-
-```
