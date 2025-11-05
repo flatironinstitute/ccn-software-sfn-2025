@@ -395,6 +395,19 @@ axs[1].set_ylabel("Position (cm)") # LOOK UP UNITS
 axs[1].set_xlabel("Time (s)");
 ```
 
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-01.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-01.png)
+:::
+</div>
+
 <div class="render-all"> 
 
 As we would expect, there is a strong theta oscillation dominating the LFP while the animal runs down the track. This oscillation is weaker after the run is complete.
@@ -486,6 +499,19 @@ ax.set_ylabel("Position (cm)")
 ax.legend([p1[0], p2[0]],["raw LFP","animal position"])
 ```
 
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-02.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-02.png)
+:::
+</div>
+
 <div class="render-all">
     
 You should see a strong presence of theta in the 6-12Hz frequency band while the animal runs down the track, which dampens during rest.
@@ -550,7 +576,7 @@ We can visualize the output by plotting the filtered signal with the original si
 ```{code-cell} ipython3
 :tags: [render-all]
 
-plt.figure(constrained_layout=True, figsize=(10, 3))
+fig = plt.figure(constrained_layout=True, figsize=(10, 3))
 plt.plot(lfp.restrict(ex_run_ep), label="raw")
 plt.plot(theta_band.restrict(ex_run_ep), label="filtered")
 plt.xlabel("Time (s)")
@@ -558,6 +584,19 @@ plt.ylabel("LFP (a.u.)")
 plt.title("Bandpass filter for theta oscillations (6-12 Hz)")
 plt.legend();
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-03.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-03.png)
+:::
+</div>
 
 ### Computing theta phase
 
@@ -608,6 +647,20 @@ p2 = ax.plot(theta_band.restrict(ex_run_shorter))
 ax.set_ylabel("Filtered LFP (a.u.)")
 ax.legend([p1[0],p2[0]],["theta phase","filtered LFP"])
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-04.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-04.png)
+:::
+</div>
+
 
 <div class="render-all">
 
@@ -687,6 +740,19 @@ p = place_fields.plot(x="position", col="unit", col_wrap=5, size=1.2, sharey=Fal
 p.set_ylabels("firing rate (Hz)")
 ```
 
+```{code-cell} ipython3
+:tags: [hide-input]
+
+p.fig.savefig("../../_static/_check_figs/02-05.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-05.png)
+:::
+</div>
+
 <div class="render-all">
     
 We can see spatial selectivity in each of the units; across the population, we have firing fields tiling the entire linear track. 
@@ -737,6 +803,19 @@ axs[1].set(ylabel="Position (cm)", xlabel="Time (s)")
 axs[1].legend()
 ```
 
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-06.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-06.png)
+:::
+</div>
+
 <div class="render-all">
     
 As the animal runs through unit 177's place field (thick green), the unit spikes (orange dots) at specific points along the theta cycle dependent on position: starting at the rising edge, moving towards the trough, and ending at the falling edge.
@@ -783,6 +862,19 @@ axs[2].set(ylabel="Position (cm)", xlabel="Time (s)", title="Animal position")
 axs[2].legend()
 ```
 
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-07.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-07.png)
+:::
+</div>
+
 <div class="render-all">
     
 We now see a negative trend in the spike phase as the animal moves through unit 177's place field. This phemomena is known as phase precession: the phase at which a unit spikes *precesses* (gets earlier) as the animal runs through that unit's place field. Explicitly, that unit will spike at *late* phases of theta (higher radians) in *earlier* positions in the field, and fire at *early* phases of theta (lower radians) in *late* positions in the field.
@@ -812,11 +904,25 @@ Now we can plot the spike phase against the spike position in a scatter plot.
 ```{code-cell} ipython3
 :tags: [render-all]
 
-plt.subplots(figsize=(5,3))
-plt.plot(spike_position, spike_phase, 'o')
-plt.ylabel("Phase (rad)")
-plt.xlabel("Position (cm)")
+fig, axs = plt.subplots(figsize=(5,3))
+axs.plot(spike_position, spike_phase, 'o')
+axs.set_ylabel("Phase (rad)")
+axs.set_xlabel("Position (cm)")
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-08.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-08.png)
+:::
+</div>
+
 
 <div class="render-all">
     
@@ -861,6 +967,20 @@ axs[0].set(ylabel="Position (cm)", title="Original position points")
 axs[1].plot(upsampled_pos.restrict(ex_run_ep),'.')
 axs[1].set(ylabel="Position (cm)", xlabel="Time (s)", title="Upsampled position points")
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-09.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-09.png)
+:::
+</div>
+
 
 #### 17. Stack `upsampled_pos` and `theta_phase` together into a single `TsdFrame`
 
@@ -915,8 +1035,21 @@ We can plot 2D tuning curves for each unit and visualize how many of these units
 ```{code-cell} ipython3
 :tags: [render-all]
 
-tuning_curves.plot(x="position", y="phase", col="unit", col_wrap=5, size=1.5, aspect=1.5)
+p = tuning_curves.plot(x="position", y="phase", col="unit", col_wrap=5, size=1.5, aspect=1.5)
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+p.fig.savefig("../../_static/_check_figs/02-10.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-10.png)
+:::
+</div>
 
 <div class="render-all">
 
@@ -998,8 +1131,23 @@ place_fields.data = gaussian_filter1d(place_fields.data, 1, axis=-1)
 idx = place_fields.argmax(axis=1)
 place_fields_sorted = place_fields.sortby(idx)
 place_fields_sorted["unit"] = np.arange(place_fields_sorted.shape[0])
-(place_fields_sorted / place_fields_sorted.max(axis=1)).plot()
+p = (place_fields_sorted / place_fields_sorted.max(axis=1)).plot()
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+p.figure.savefig("../../_static/_check_figs/02-11.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-11.png)
+:::
+</div>
+
+
 
 <div class="render-all">
 
@@ -1038,6 +1186,20 @@ ax.legend()
 fig.colorbar(c, label="decoded probability")
 ax.set(xlabel="Time (s)", ylabel="Position (cm)", );
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-12.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-12.png)
+:::
+</div>
+
 
 <div class="render-all">
     
@@ -1090,6 +1252,19 @@ fig.colorbar(c, label="decoded probability")
 ax.set(xlabel="Time (s)", ylabel="Position (cm)", );
 ```
 
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-13.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-13.png)
+:::
+</div>
+
 <div class="render-all">
     
 This gives us a much closer approximation of the animal's true position.
@@ -1133,6 +1308,19 @@ axs[1].set_ylabel("LFP (a.u.)")
 
 fig.supxlabel("Time (s)");
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-14.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-14.png)
+:::
+</div>
 
 <div class="render-all">
     
@@ -1448,3 +1636,7 @@ As an bonus, more open-ended exercise, we can investigate all the scientific dec
 The data in this tutorial comes from [Grosmark, Andres D., and György Buzsáki. "Diversity in neural firing dynamics supports both rigid and learned hippocampal sequences." Science 351.6280 (2016): 1440-1443](https://www.science.org/doi/full/10.1126/science.aad1935).
 
 </div>
+
+```{code-cell} ipython3
+
+```
