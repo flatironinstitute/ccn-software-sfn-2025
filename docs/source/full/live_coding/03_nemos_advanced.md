@@ -807,25 +807,12 @@ null_basis = nmo.basis.CustomBasis([func]).to_transformer()
 null_basis.compute_features(position).shape
 ```
 
-
-
-Why is this useful? Because we can use this `null_basis` and basis composition to do model selection. As a first step, we can notice that the original additive basis is stored as a `basis` attribute in the [`TransformerBasis`](https://nemos.readthedocs.io/en/latest/generated/_transformer_basis/nemos.basis._transformer_basis.TransformerBasis.html).
-
 <div class="render-user render-presenter">
 
-- First we can note that the original "position + speed" additive basis is the `basis` attribute of the transformer.
+Why is this useful? Because we can use this `null_basis` and basis composition to do model selection. Let's define the bases for our three models:
+
+- Add the null basis to the speed or position basis to generate a composite basis for the position-only and speed-only.
 </div>
-
-```{code-cell} ipython3
-
-pipe["basis"].basis
-```
-
-<div class="render-user render-presenter">
-
-- Add the null basis to the speed or position basis to generate a composite basis for the position-only and speed-only model that receives the same 2D input as the model including all predictors!
-</div>
-
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -859,10 +846,60 @@ basis_position.label = "position"
 basis_speed.label = "speed"
 ```
 
+<div class="render-user render-presenter">
+
+These bases can all transform the `transformer_input`, a `TsdFrame` with columns `position` and `speed`, but will generate different design matrices:
+
+</div>
+
+<div class="render-user">
+# "position + speed" design
+print("position + speed design matrix shape:")
+print(basis_all.transform(transformer_input).shape)
+# "position" design
+print("\nposition design matrix shape:")
+print(basis_position.transform(transformer_input).shape)
+# "speed" design
+print("\nspeed design matrix shape:")
+print(basis_speed.transform(transformer_input).shape)
+</div>
+
+```{code-cell} ipython3
+# "position + speed" design
+print("position + speed design matrix shape:")
+print(basis_all.transform(transformer_input).shape)
+
+# "position" design
+print("\nposition design matrix shape:")
+print(basis_position.transform(transformer_input).shape)
+
+# "speed" design
+print("\nspeed design matrix shape:")
+print(basis_speed.transform(transformer_input).shape)
+
+```
+
+We can notice that the original additive basis is stored as a `basis` attribute in the [`TransformerBasis`](https://nemos.readthedocs.io/en/latest/generated/_transformer_basis/nemos.basis._transformer_basis.TransformerBasis.html).
 
 <div class="render-user render-presenter">
 
-- Create a parameter grid for each model of interest. 
+- What we want to do now is cross-validate over the additive itself. To do so, we first note that this basis is stored as `basis` attribute of the transformer.
+
+</div>
+
+<div class="render-user">
+pipe["basis"].basis
+</div>
+
+```{code-cell} ipython3
+
+pipe["basis"].basis
+```
+
+
+<div class="render-user render-presenter">
+
+- Therefore, we can create a parameter grid for each model of interest. 
 - The attribute to cross-validate over is `"basis__basis"`, where the first "basis" is the name of the pipeline step, the second one is the attribute of the transformer.
 </div>
 
@@ -909,7 +946,7 @@ cv_df = pd.DataFrame(cv.cv_results_)
 cv_df[["param_basis__basis", "mean_test_score", "rank_test_score"]]
 ```
 
-Unsurprisingly, position comes up as the predictor with the larger explnatory power and speed adds marginal benefits.
+Unsurprisingly, position comes up as the predictor with the larger explanatory power and speed adds marginal benefits.
 
 For the next project, you can use all the tools showcased here to find a better encoding model model for these hyppocampal neurons. 
 
