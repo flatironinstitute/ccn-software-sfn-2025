@@ -680,7 +680,7 @@ X_train = additive_basis.compute_features(
 
 <div class="render-all">
 
-- Decide on regularization. (Hint: review Edoardo's presentation and the [place cell](sklearn-cv) notebook.)
+- Decide on regularization. (Hint: review [Edoardo's presentation](https://users.flatironinstitute.org/~wbroderick/presentations/sfn-2025/model_selection.pdf) and the [place cell](sklearn-cv) notebook.)
 - Initialize GLM. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn-cv) notebooks.)
 - Call fit. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn-cv) notebooks.)
 - Visualize result on PSTHs. (Note that you should use {func}`~pynapple.process.perievent.compute_perievent_continuous` and the model predictions here! Otherwise, this looks very similar to our PSTH calculation above.)
