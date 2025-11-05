@@ -9,8 +9,8 @@ kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
-no-search:
-orphan:
+no-search: true
+orphan: true
 ---
 
 ```{code-cell} ipython3
@@ -26,7 +26,6 @@ warnings.filterwarnings(
     message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
     category=UserWarning,
 )
-
 ```
 
 :::{admonition} Download

@@ -9,8 +9,8 @@ kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
-no-search:
-orphan:
+no-search: true
+orphan: true
 ---
 
 ```{code-cell} ipython3
@@ -26,7 +26,6 @@ warnings.filterwarnings(
     message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
     category=UserWarning,
 )
-
 ```
 
 :::{admonition} Download
@@ -268,6 +267,7 @@ Let's use that function to construct two separate perievent dictionaries, one al
 </div>
 
 (compute-perievent)=
+
 ```{code-cell} ipython3
 :tags: [render-all]
 
@@ -569,6 +569,7 @@ Here we'll model three separate components of the response:
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 # Create a TsdFrame filled by zeros, for the size of units_counts
 stim = nap.TsdFrame(
     t=units_counts.t,

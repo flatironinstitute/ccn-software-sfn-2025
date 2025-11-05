@@ -9,8 +9,8 @@ kernelspec:
   name: python3
   display_name: Python 3 (ipykernel)
   language: python
-no-search:
-orphan:
+no-search: true
+orphan: true
 ---
 
 ```{code-cell} ipython3
@@ -156,7 +156,6 @@ In NWB files, spike times are stored in the `units` entry.
 spikes = ...  # Get spike timings
 print(spikes)
 ```
-
 
 </div>
 
@@ -542,6 +541,7 @@ To fit the GLM faster, we will use only the first 3 min of wake.
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 # restrict wake epoch to first 3 minutes
 wake_ep = nap.IntervalSet(
     start=wake_ep.start[0], end=wake_ep.start[0] + 3 * 60
@@ -579,6 +579,7 @@ This is useful to visualize the activity of neurons based on their preferred dir
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 count = count[:, np.argsort(pref_ang.values)]
 ```
 
@@ -600,6 +601,7 @@ Before starting the analysis, let's
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 # select a neuron's spike count time series
 neuron_count = count[:, 0]
 
@@ -623,6 +625,7 @@ Let's :
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 # set the size of the spike history window in seconds
 window_size_sec = 0.8
 
@@ -701,6 +704,7 @@ dimension are matching our expectation
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 print(f"Time bins in counts: {neuron_count.shape[0]}")
 print(f"Convolution window size in bins: {window_size}")
 print(f"Feature shape: {input_feature.shape}")
@@ -838,7 +842,6 @@ model_second_half.fit(
 ```
 </div>
 
-
 ```{code-cell} ipython3
 # fit on the other half of the data
 
@@ -932,7 +935,6 @@ basis = nmo.basis.RaisedCosineLogConv(
 ```
 </div>
 
-
 ```{code-cell} ipython3
 # a basis object can be instantiated in "conv" mode for convolving  the input.
 basis = nmo.basis.RaisedCosineLogConv(
@@ -969,7 +971,6 @@ print(f"Raw count history as feature: {input_feature.shape}")
 print(f"Compressed count history as feature: {conv_spk.shape}")
 ```
 </div>
-
 
 ```{code-cell} ipython3
 # equivalent to
@@ -1017,7 +1018,6 @@ model_basis.fit(
 ```
 </div>
 
-
 ```{code-cell} ipython3
 # use restrict on interval set training
 model_basis = nmo.glm.GLM(solver_name="LBFGS")
@@ -1053,6 +1053,7 @@ Then we can multiply the basis kernels with the coefficients using `np.matmul`.
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 # get the basis function kernels
 _, basis_kernels = basis.evaluate_on_grid(window_size)
 
@@ -1071,6 +1072,7 @@ by visual comparison, as we did previously. Let's fit the second half of the dat
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 # fit on the other half of the data
 model_basis_second_half = nmo.glm.GLM(solver_name="LBFGS").fit(
     conv_spk.restrict(second_half), neuron_count.restrict(second_half)
@@ -1178,7 +1180,6 @@ convolved_count = basis.compute_features(...) # Parameter is the binned spike co
 ```
 </div>
 
-
 ```{code-cell} ipython3
 # reset the input shape by passing the pop. count
 print(count.shape)
@@ -1200,6 +1201,7 @@ Shape should be `(n_samples, n_basis_func * n_neurons)`
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 print(f"Convolved count shape: {convolved_count.shape}")
 ```
 
@@ -1234,7 +1236,6 @@ print(f"Model coefficients shape: {model.coef_.shape}")
 ```
 </div>
 
-
 ```{code-cell} ipython3
 model = nmo.glm.PopulationGLM(
     regularizer="Ridge",
@@ -1264,7 +1265,6 @@ predicted_firing_rate = model.predict(...) # Parameter is the convolved feature 
 predicted_firing_rate = predicted_firing_rate * conv_spk.rate
 ```
 </div>
-
 
 ```{code-cell} ipython3
 predicted_firing_rate = model.predict(convolved_count) * conv_spk.rate
@@ -1314,6 +1314,7 @@ Finally, we can extract and visualize the pairwise interactions between neurons.
 
 ```{code-cell} ipython3
 :tags: [render-all]
+
 # original shape of the weights
 print(f"GLM coeff: {model.coef_.shape}")
 ```
