@@ -664,7 +664,7 @@ fig.savefig("../../_static/_check_figs/02-04.png")
 
 <div class="render-all">
 
-We can see that cycle "resets" (i.e. goes from $2\pi$ to $0$) at peaks of the theta oscillation.
+You should be able to see that each cycle "resets" (i.e. goes from $2\pi$ to $0$) at peaks of the theta oscillation.
 
 </div>
 
@@ -755,7 +755,7 @@ p.fig.savefig("../../_static/_check_figs/02-05.png")
 
 <div class="render-all">
     
-We can see spatial selectivity in each of the units; across the population, we have firing fields tiling the entire linear track. 
+We can see spatial selectivity in many of the units; across the population, we have firing fields tiling the entire linear track. 
 
 </div>
 
@@ -1035,7 +1035,8 @@ We can plot 2D tuning curves for each unit and visualize how many of these units
 ```{code-cell} ipython3
 :tags: [render-all]
 
-p = tuning_curves.plot(x="position", y="phase", col="unit", col_wrap=5, size=1.5, aspect=1.5)
+tc_norm = tuning_curves / tuning_curves.max(axis=(1,2))
+p = tc_norm.plot(x="position", y="phase", col="unit", col_wrap=5, size=1.2, aspect=2)
 ```
 
 ```{code-cell} ipython3
@@ -1053,7 +1054,7 @@ p.fig.savefig("../../_static/_check_figs/02-10.png")
 
 <div class="render-all">
 
-Many of the units display a negative relationship between position and phase, characteristic of phase precession.
+We can see a number of units that display a negative relationship between position and phase, characteristic of phase precession. In addition to 177, units 23, 33, and 146 are good examples of this phenomena. In contrast, units 125 and 258 don't appear to be phase precessing.
 
 </div>
 
