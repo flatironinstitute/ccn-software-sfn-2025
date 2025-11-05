@@ -857,7 +857,7 @@ These bases can all transform the same `transformer_input` (a `TsdFrame` with co
 </div>
 
 ```{code-cell} ipython3
-:tags: [render-user, render-presenter]
+:tags: [render-all]
 
 # "position + speed" design: 25 features (10 + 15)
 print("position + speed design matrix shape:")
