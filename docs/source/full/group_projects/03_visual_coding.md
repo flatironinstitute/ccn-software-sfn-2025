@@ -519,8 +519,15 @@ There are many ways to do this. We'll show fitting a single neuron `GLM` to a va
 
 <div class="render-all">
 
-- Create spike count data. (Hint: review the [current injection notebook](current-inj-basic).)
+- Decide on bin size and create spike count data. (Hint: review the [current injection notebook](current-inj-basic).)
 
+</div>
+
+<div class="render-user">  
+```{code-cell} ipython3
+bin_size = 
+units_counts = 
+```
 </div>
 
 ```{code-cell} ipython3
@@ -533,6 +540,8 @@ units_counts = selected_units.count(bin_size, ep=extended_flashes)
 <div class="render-all">
 
 - Decide on feature(s).
+    - The code block below constructs `stim`, a `TsdFrame` containing 1s whenever the stimulus is being presented (in separate columns for white and black).
+    - You can use this, but you may also want to perform additional computations on `stim` to construct other features.
 - Decide on basis. (Hint: review the [current injection](current-inj-basis) or [place cell](sklearn-basis) notebooks.)
     - If you set the `label` argument for your basis objects, interpreting the output will be easier.
 - Construct design matrix. (Hint: review the [place cell](basis_eval_place_cells) notebook.)
@@ -541,10 +550,10 @@ units_counts = selected_units.count(bin_size, ep=extended_flashes)
 :class: hint dropdown
 
 If you're having trouble coming up with features to include, here are some possibilities:
-- Stimulus. (Review the [current injection](current-inj-prep) notebook.)
+- Stimulus, using `stim`. (Review the [current injection](current-inj-prep) notebook.)
 - Stimulus onset. (Hint: you can use {func}`numpy.diff` to find when the stimulus transitions from off to on.)
 - Stimulus offset. (Hint: you can use {func}`numpy.diff` to find when the stimulus transitions from on to off.)
-- For multiple neurons: neuron-to-neuron coupling. (Refer back to the [the head direction notebook from the first day](head_direction_fit) to see an example of fitting coupling filters.)
+- For multiple neurons: neuron-to-neuron coupling, using `units_counts`. (Refer back to the [the head direction notebook from the first day](head_direction_fit) to see an example of fitting coupling filters.)
 
 For the stimuli predictors, you probably want to model white and black separately.
 
@@ -559,43 +568,53 @@ Here we'll model three separate components of the response:
 - Full flash duration (smoothing): We will convolve the entire flash period with a third basis function, serving as a smoother to capture more sustained or slowly varying effects across the full stimulus window.
 
 ```{code-cell} ipython3
+:tags: [render-all]
 # Create a TsdFrame filled by zeros, for the size of units_counts
 stim = nap.TsdFrame(
     t=units_counts.t,
     d=np.zeros((len(units_counts), 2)), 
     columns = ['white', 'black']
 )
+
 # Check whether there is a flash within a given bin of spikes
-# If there is not, put a nan in that index
 idx_white = flashes_white.in_interval(units_counts)
 idx_black = flashes_black.in_interval(units_counts)
 
-# Replace everything that is not nan with 1 in the corresponding column
+# Put a 1 at those locations
 stim.d[~np.isnan(idx_white), 0] = 1
 stim.d[~np.isnan(idx_black), 1] = 1
+```
 
+```{code-cell} ipython3
 white_onset = nap.Tsd(
     t=stim.t, 
     d=np.hstack((0,np.diff(stim["white"])==1)),
-    time_support = units_counts.time_support
+    time_support=units_counts.time_support
 )
 
 white_offset = nap.Tsd(
     t=stim.t, 
     d=np.hstack((0,np.diff(stim["white"])==-1)),
-    time_support = units_counts.time_support
+    time_support=units_counts.time_support
 )
 
 black_onset = nap.Tsd(
     t=stim.t, 
     d=np.hstack((0,np.diff(stim["black"])==1)),
-    time_support = units_counts.time_support
+    time_support=units_counts.time_support
 )
 black_offset = nap.Tsd(
     t=stim.t, 
     d=np.hstack((0,np.diff(stim["black"])==-1)),
-    time_support = units_counts.time_support
+    time_support=units_counts.time_support
 )
+
+# OR
+
+white_onset = nap.Ts(flashes_white.start).count(bin_size, ep=units_counts.time_support)
+black_onset = nap.Ts(flashes_black.start).count(bin_size, ep=units_counts.time_support)
+white_offset = nap.Ts(flashes_white.end).count(bin_size, ep=units_counts.time_support)
+black_offset = nap.Ts(flashes_black.end).count(bin_size, ep=units_counts.time_support)
 ```
 
 Now set up the basis functions
