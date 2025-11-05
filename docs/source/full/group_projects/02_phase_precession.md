@@ -1231,7 +1231,7 @@ The goal of this project is to fit a PopulationGLM including both position and s
     
 As we've seen before, we will use basis objects to represent the input values.  In previous tutorials, we've used the `Conv` basis objects to represent the time-dependent effects we were looking to capture. Here, we're trying to capture the non-linear relationship between our input variables and firing rate, so we want the `Eval` objects. In these circumstances, you should look at the tuning you're trying to capture and compare to the [basis kernels (visualized in NeMoS docs)](table_basis): you want your tuning to be capturable by a linear combination of them.
 
-In this case, several of these would probably work; we will use [`MSplineEval`](nemos.basis.MSplineEval) for both, though with different numbers of basis functions.
+In this case, several of these would probably work; we will use [`MSplineEval`](https://nemos.readthedocs.io/en/latest/generated/basis/nemos.basis.MSplineEval.html#nemos.basis.MSplineEval) for both, though with different numbers of basis functions.
 
 Additionally, since we have two different inputs, we'll need two separate basis objects.
 
@@ -1273,9 +1273,9 @@ workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
     
 However, now we have an issue: in all our previous examples, we had a single basis object, which took a single input to produce a single array which we then passed to the `GLM` object as the design matrix. What do we do when we have multiple basis objects?
 
-For people new to NeMoS, but familiar with NumPy, you can call `basis.compute_features()` for each basis separately and then concatenate the outputs.
+For people new to NeMoS, but familiar with NumPy, you can call `basis.compute_features()` for each basis separately and then [concatenate](https://numpy.org/doc/stable/reference/generated/numpy.concatenate.html) the outputs.
 
-For people familiar with NeMoS basis composition, you can add the two bases together obtaining a new 2D basis, then call `compute_features` passing both position and speed to obtain the same design matrix.
+For people familiar with [NeMoS basis composition](https://nemos.readthedocs.io/en/latest/background/basis/plot_02_ND_basis_function.html), you can add the two bases together obtaining a new 2D basis, then call `compute_features` passing both position and speed to obtain the same design matrix.
 
 </div>
 
@@ -1283,10 +1283,10 @@ For people familiar with NeMoS basis composition, you can add the two bases toge
 
 <div class="render-all">
 
-- Call `compute_fatures` for both position and speed bases and concatenate the result to form a single design matrix.
-- Add the basis objects together and call `compute_fatures` on the newly created additive basis.
-  
+2.1. Call `compute_fatures` for both position and speed bases and concatenate the result to form a single design matrix.
+
 </div>
+
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -1299,8 +1299,29 @@ X
 
 ```{code-cell} ipython3
 # equivalent to calling nmo.basis.AdditiveBasis(position_basis, speed_basis)
+X_position = position_basis.compute_features(position)
+X_speed = speed_basis.compute_features(speed)
+X = np.concatenate([X_position, X_speed], axis=1)
+X
+```
+
+<div class="render-all">
+
+2.2. Add the basis objects together and call `compute_fatures` on the newly created additive basis.
+
+</div>
+
+<div class="render-user">
+```{code-cell} ipython3
+additive_basis =
+X = 
+
+```
+</div>
+
+```{code-cell} ipython3
+# equivalent to calling nmo.basis.AdditiveBasis(position_basis, speed_basis)
 basis = position_basis + speed_basis
-basis.compute_features(position, speed)
 X = basis.compute_features(position, speed)
 X
 ```
@@ -1352,7 +1373,7 @@ glm.fit(X, count)
 
 <div class="render-all">
 
-Let's check first if our model can accurately predict the tuning curves we displayed above. We can use the [`predict`](nemos.glm.GLM.predict) function of NeMoS and then compute new tuning curves. Set `bins=50` for the tuning curves.
+Let's check first if our model can accurately predict the tuning curves we displayed above. We can use the [`predict`](https://nemos.readthedocs.io/en/latest/generated/glm/nemos.glm.GLM.predict.html#nemos.glm.GLM.predict) function of NeMoS and then compute new tuning curves. Set `bins=50` for position and `bins=30` for speed.
 
 </div>
 
