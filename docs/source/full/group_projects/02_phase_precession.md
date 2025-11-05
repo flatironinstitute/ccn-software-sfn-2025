@@ -1314,8 +1314,7 @@ X
 <div class="render-user">
 ```{code-cell} ipython3
 additive_basis =
-X = 
-
+X =
 ```
 </div>
 
