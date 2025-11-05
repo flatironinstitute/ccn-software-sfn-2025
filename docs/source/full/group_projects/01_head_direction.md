@@ -138,7 +138,15 @@ print(spikes)
 
 There are a lot of neurons. The neurons that interest us are the neurons labeled `adn`. 
 
-**Question:** Using the [slicing method](https://pynapple.org/user_guide/03_metadata.html#using-metadata-to-slice-objects) of your choice, can you select only the neurons in `adn` that are above 2 Hz firing rate?
+**Question:** Using the slicing method of your choice, can you select only the neurons in `adn` that are above 2 Hz firing rate?
+
+THere multiple options here. As a reminder, metadatas can be accessed like a dictionary or as attributes. There are also
+functions that can help you filter neurons based on metadata.
+
+1. `spikes.label` returns a pandas Series with the metadata of the neurons.
+2. `spikes['label']` returns a pandas Series with the metadata of the neurons.
+3. Functions like [`spikes.getby_category`](https://pynapple.org/generated/pynapple.TsGroup.getby_category.html#pynapple.TsGroup.getby_category)
+    or [`spikes.getby_threshold`](https://pynapple.org/generated/pynapple.TsGroup.getby_threshold.html#pynapple.TsGroup.getby_threshold) can help you filter neurons based on metadata.
 
 </div>
 
@@ -702,9 +710,9 @@ You can construct this feature matrix with the [`HistoryConv`](nemos.basis.Histo
 # convert the prediction window to bins (by multiplying with the sampling rate)
 window_size = int(window_size_sec * neuron_count.rate)
 # define the history bases
-history_basis = nmo.basis.HistoryConv() # Parameter indicate the window size in bins
+history_basis = # Parameter indicate the window size in bins
 # create the feature matrix
-input_feature = history_basis.compute_features() # Parameter is the binned spike count time series
+input_feature =  # Using history_basis compute features on neuron_count
 ```
 </div>
 
@@ -896,7 +904,7 @@ If we are correct, what would happen if we re-fit the weights on the other half 
 <div class="render-user">
 ```{code-cell} ipython3
 # fit on the other half of the data
-model_second_half = nmo.glm.GLM() # Parameter is the solver name
+model_second_half =  # Parameter is the solver name
 model_second_half.fit(
     , # Parameter is the feature matrix restricted to the second half
      # Parameter is the binned spike count time series restricted to the second half
