@@ -268,7 +268,7 @@ For the following exercises, we'll only focus on periods when the animal is awak
 
 </div>
 
-#### 1. Save out the time support of position, giving us the epoch during which the animal is awake.
+#### 1. Save out the time support of `position`, giving us the epoch during which the animal is awake.
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -335,7 +335,7 @@ Finally, we can use `run_ep` and `forward_ep` to extract epochs when the animal 
 
 </div>
 
-#### 4. Use the [`IntervalSet`](https://pynapple.org/generated/pynapple.IntervalSet.html#pynapple.IntervalSet) method [`set_diff`](https://pynapple.org/generated/pynapple.IntervalSet.set_diff.html) to get `backward_ep` from `run_ep` and `forward_ep`
+#### 4. Use the `IntervalSet` method [`set_diff`](https://pynapple.org/generated/pynapple.IntervalSet.set_diff.html) to get `backward_ep` from `run_ep` and `forward_ep`
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -352,11 +352,11 @@ backward_ep
     
 Now, when extracting the LFP, spikes, and position, we can use `restrict()` with any of these epochs to restrict the data to our movement period of interest.
 
-To get a sense of what the LFP looks like while the animal runs down the linear track, we can plot each variable, `lfp_run` and `position`, side-by-side. Let's do this for an example run; specifically, we'll look at forward run 9.
+To get a sense of what the LFP looks like while the animal runs down the linear track, we can plot each variable, `lfp` and `position`, side-by-side. Let's do this for an example run; specifically, we'll look at forward run 9.
 
 </div>
 
-#### 5. Create an interval set for forward run 9, adding 2 seconds to the end of the interval. Restrict LFP and position to this epoch.
+#### 5. Create an interval set for forward run index 9, adding 2 seconds to the end of the interval. Restrict `lfp` and `position` to this epoch.
 
 <div class="render-user">
 ```{code-cell} ipython3
@@ -442,11 +442,11 @@ freqs = np.geomspace(5, 200, 100)
 
 <div class="render-all">
 
-We can now compute the wavelet transform on our LFP data during the example run using [`nap.compute_wavelet_transform`](https://pynapple.org/generated/pynapple.process.wavelets.html#pynapple.process.wavelets.compute_wavelet_transform) by passing both `ex_lfp_run` and `freqs`. We'll also pass the optional argument `fs`, which is known to be 1250Hz from the study methods.
+We can now compute the wavelet transform on our LFP data during the example run using [`nap.compute_wavelet_transform`](https://pynapple.org/generated/pynapple.process.wavelets.html#pynapple.process.wavelets.compute_wavelet_transform) by passing both `ex_lfp` and `freqs`. We'll also pass the optional argument `fs`, which is known to be 1250Hz from the study methods.
 
 </div>
 
-#### 7. Compute the wavelet transform.
+#### 7. Compute the wavelet transform of `ex_lfp` using `freqs` defined above.
 
 <div class="render-all">
 
@@ -526,7 +526,7 @@ For the remaining exercises, we'll reduce our example epoch to the portion when 
 
 </div>
 
-#### 8. Restrict the LFP and position to epochs when the animal is running forward, and create a new [`IntervalSet`](https://pynapple.org/generated/pynapple.IntervalSet.html#pynapple.IntervalSet) for forward run 9 with no padding.
+#### 8. Restrict the `lfp` and `position` to `forward_ep` and create a new `IntervalSet` for forward run index 9 with no padding.
 
 <div class="render-user">  
 ```{code-cell} ipython3
@@ -548,7 +548,7 @@ We can extract the theta oscillation by applying a bandpass filter on the raw LF
 
 </div>
 
-#### 9. Using [`nap.apply_bandpass_filter`](https://pynapple.org/generated/pynapple.process.filtering.html#pynapple.process.filtering.apply_bandpass_filter), filter the LFP for theta within a 6-12 Hz range.
+#### 9. Using [`nap.apply_bandpass_filter`](https://pynapple.org/generated/pynapple.process.filtering.html#pynapple.process.filtering.apply_bandpass_filter), filter `lfp` for theta within a 6-12 Hz range.
 
 <div class="render-all">
 
@@ -604,7 +604,7 @@ fig.savefig("../../_static/_check_figs/02-03.png")
 
 In order to examine phase precession in place cells, we need to extract the phase of theta from the filtered signal. We can do this by taking the angle of the [Hilbert transform](https://en.wikipedia.org/wiki/Hilbert_transform).
 
-#### 10. Use `sp.signal.hilbert` to perform the Hilbert transform, and  the numpy function `np.angle` to extract the angle. Convert the output angle to a [0, 2pi] range, and store the result in a `Tsd` object.
+#### 10. Use [`sp.signal.hilbert`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.hilbert.html) to perform the Hilbert transform of `theta_band`, using [`np.angle`](https://numpy.org/doc/2.3/reference/generated/numpy.angle.html) to extract the angle. Convert the output angle to a [0, 2pi] range, and store the result in a `Tsd` object.
 
 - TIP: don't forget to pass the time support!
   
@@ -691,7 +691,7 @@ good_spikes =
 good_spikes = spikes[(spikes.restrict(forward_ep).rate >= 1) & (spikes.restrict(forward_ep).rate <= 10)]
 ```
 
-#### 12. Compute tuning curves for units in `good_spikes` with respect to forward running position, using 50 position bins.
+#### 12. Compute tuning curves for units in `good_spikes` with respect to `position`
 
 <div class="render-all">
 
@@ -982,7 +982,7 @@ fig.savefig("../../_static/_check_figs/02-09.png")
 </div>
 
 
-#### 17. Stack `upsampled_pos` and `theta_phase` together into a single `TsdFrame`
+#### 17. Stack `upsampled_pos` and `theta_phase` together into a single [`TsdFrame`](https://pynapple.org/generated/pynapple.TsdFrame.html)
 
 <div class="render-all">
     
@@ -1008,7 +1008,7 @@ features = nap.TsdFrame(
 features
 ```
 
-#### 18. Apply [`nap.compute_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_tuning_curves) for `features` on our subselected group of units, `good_spikes`
+#### 18. Apply [`nap.compute_tuning_curves`](https://pynapple.org/generated/pynapple.process.tuning_curves.html#pynapple.process.tuning_curves.compute_tuning_curves) with `features` on our subselected group of units, `good_spikes`
 
 <div class="render-all">
 
