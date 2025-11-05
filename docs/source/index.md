@@ -18,11 +18,19 @@ The presentations and schedule for this workshop can be found at [this page](htt
 
 ## This website
 
-This website contains rendered versions of the notebooks we will be working through during this workshop. During the workshop, attendees should look at the versions found under the `For users` section. These notebooks have some code pre-filled, as well as brief notes to help orient you. If you follow the setup instructions below, you will have editable copies of these notebooks on your laptop, and you are expected to follow along using these notebooks.
+This website contains rendered versions of the notebooks we will be working through during this workshop. Several different versions of the notebooks are presented in the sidebar:
 
-If you miss something or fall behind, you can look into the `For presenters` section, which includes the completed code blocks (along with some notes), so you can catch up.
+- The `Full notebooks` section shows versions of the live coding notebook that include explanatory text, code, and plots. These are intended for you to check out after the workshop or to send to your labmates, so you can see everything that we covered.
 
-After the workshop, we encourage you to return and check out the `Full notebooks` section, which, as the name implies, includes everything: explanatory text, code, and plots.
+- The `Group projects` section contains the notebooks you will be working through during the group project sections of the workshop. They contain some pre-filled code, some notes, and a lot of problems that you will be solving as a group. If you follow the setup instructions below, you will have editable copies of these notebooks on your laptop, and you are expected to follow along using these notebooks.
+
+- The `Limited live coding notebooks` section contains two different versions of the live coding notebooks:
+   
+   - `For users` contains the notebooks you attendees should be working though. These notebooks have some code pre-filled, as well as brief notes to help orient you. If you follow the setup instructions below, you will have editable copies of these notebooks on your laptop, and you are expected to follow along using these notebooks.
+   
+   - `For presenters` is there to help if you miss something or fall behind. These notebooks includes the completed code blocks (along with some notes), so you can catch up.
+
+We also have completed versions of the group projects notebooks; if you are interested, ask us after the workshop and we will send them to you.
 
 (setup)=
 ## Setup
