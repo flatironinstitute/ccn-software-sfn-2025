@@ -148,12 +148,10 @@ There are a lot of neurons. The neurons that interest us are the neurons labeled
 </div>
 
 <div class="render-user">
-
 ```{code-cell} ipython3
 spikes = ...  # Select only ADN neurons with rate > 2.0 Hz
 print(len(spikes))
 ```
-
 </div>
 
 ```{code-cell} ipython3
@@ -171,12 +169,10 @@ The NWB file contains other information about the recording. `ry` contains the v
 </div>
 
 <div class="render-user">
-
 ```{code-cell} ipython3
 angle = ...  # Get head-direction data from NWB object
 print(angle)
 ```
-
 </div>
 
 ```{code-cell} ipython3
@@ -208,12 +204,10 @@ The animal was recorded during wakefulness and sleep.
 </div>
 
 <div class="render-user">
-
 ```{code-cell} ipython3
 epochs = ...  # Get behavioral epochs from NWB object
 print(epochs)
 ```
-
 </div>
 
 ```{code-cell} ipython3
@@ -229,12 +223,10 @@ NWB file can save intervals with multiple labels. The object `IntervalSet` inclu
 **Question:** Using the column `tags`, can you create one `IntervalSet` object for intervals labeled `wake` and one `IntervalSet` object for intervals labeled `sleep`?
 
 <div class="render-user">
-
 ```{code-cell} ipython3
 wake_ep = ... # Get wake intervals from epochs
 sleep_ep = ... # Get sleep intervals from epochs
 ```
-
 </div>
 
 ```{code-cell} ipython3
@@ -259,7 +251,6 @@ To do this in pynapple, all you need is the call of a single function : `nap.com
 **Question:** can you compute the firing rate of ADn units as a function of heading direction, i.e. a head-direction tuning curve and call the variable `tuning_curves`?
 
 <div class="render-user">
-
 ```{code-cell} ipython3
 tuning_curves = nap.compute_tuning_curves(
     data=..., # The neural activity as a TsGroup
@@ -268,11 +259,9 @@ tuning_curves = nap.compute_tuning_curves(
     epochs = angle.time_support, # The epochs should correspond to when the features are defined. Here we use the time support directly
     range= (0, 2*np.pi), # The min and max of the bin array
     feature_names = ["angle"] # Let's give a name to our feature for better labelling of the output.
-    )
-    
+    ) 
 tuning_curves
 ```
-
 </div>
 
 ```{code-cell} ipython3
@@ -389,7 +378,6 @@ In pynapple, we use the function `nap.compute_crosscorrelogram` to compute cross
 </div>
 
 <div class="render-user">
-
 ```{code-cell} ipython3
 cc_wake = nap.compute_crosscorrelogram(
     data=..., # The neural activity as a TsGroup
@@ -398,7 +386,6 @@ cc_wake = nap.compute_crosscorrelogram(
     ep=... # Which epoch to restrict the cross-correlograms. Here is it should be wakefulness.
     )
 ```
-
 </div>
 
 ```{code-cell} ipython3
@@ -456,7 +443,6 @@ Pairwise correlation were computed during wakefulness. The activity of the neuro
 </div>
 
 <div class="render-user">
-
 ```{code-cell} ipython3
 cc_sleep = nap.compute_crosscorrelogram(
     data=..., # The neural activity as a TsGroup
@@ -465,7 +451,6 @@ cc_sleep = nap.compute_crosscorrelogram(
     ep=... # Which epoch to restrict the cross-correlograms. Here is it should be sleep.
     )
 ```
-
 </div>
 
 ```{code-cell} ipython3
@@ -515,7 +500,7 @@ What does it mean for the relationship between cells here? Remember that during 
 
 ## Fitting a GLM model with Nemos
 
-<div class="render-user">
+<div class="render-all">
 
 In the first part of the notebook, we characterized the relationship between head-direction cells during wake and sleep. Cells that fire together during wake also fire together during sleep and cells that don't fire together during wake don't fire together during sleep. The goal here is to characterized this relationship with generalized linear model. Since cells have a functional relationship to each other, the activity of one cell should predict the activity of another cell.
 
