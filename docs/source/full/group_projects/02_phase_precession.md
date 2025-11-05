@@ -9,7 +9,30 @@ kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
+no-search: true
+orphan: true
 ---
+
+```{code-cell} ipython3
+:tags: [hide-input, render-all]
+
+%matplotlib inline
+%load_ext autoreload
+%autoreload 2
+import warnings
+
+warnings.filterwarnings(
+    "ignore",
+    message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
+    category=UserWarning,
+)
+```
+
+:::{admonition} Download
+:class: important render-all
+
+This notebook can be downloaded as **{nb-download}`02_phase_precession.ipynb`**. See the button at the top right to download as markdown or pdf.
+:::
 
 # Group Project 2: Analyzing hippocampal place cells with Pynapple and NeMoS
 
@@ -41,9 +64,6 @@ For part 2, we will by applying NeMoS to explore the dataset further by:
 ```{code-cell} ipython3
 :tags: [render-all]
 
-# suppress warnings
-import warnings
-warnings.simplefilter("ignore")
 
 # imports
 import math
@@ -61,6 +81,9 @@ import workshop_utils
 # necessary for animation
 import nemos as nmo
 plt.style.use(nmo.styles.plot_style)
+
+# configure pynapple to ignore conversion warning
+nap.nap_config.suppress_conversion_warnings = True
 ```
 
 ## Part 1: Using Pynapple to identify phase precession and hippocampal sequences
@@ -1455,8 +1478,21 @@ workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
 ```{code-cell} ipython3
 position_basis = nmo.basis.BSplineEval(n_basis_funcs=10, label="position")
 speed_basis = nmo.basis.BSplineEval(n_basis_funcs=10, label="speed")
-workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
+fig = workshop_utils.plot_pos_speed_bases(position_basis, speed_basis)
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-15.png")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-15.png)
+:::
+</div>
 
 <div class="render-all">
     
@@ -1604,8 +1640,21 @@ We can plot the results to compare the model and data tuning curves.
 ```{code-cell} ipython3
 :tags: [render-all]
 
-workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_tuning_pos, glm_tuning_speed);
+fig = workshop_utils.plot_position_speed_tuning(place_fields, tc_speed, glm_tuning_pos, glm_tuning_speed);
 ```
+
+```{code-cell} ipython3
+:tags: [hide-input]
+
+fig.savefig("../../_static/_check_figs/02-16.png", bbox_inches="tight")
+```
+
+<div class="render-user">
+:::{admonition} Figure check
+:class: dropdown
+![](../../_static/_check_figs/02-16.png)
+:::
+</div>
 
 <div class="render-all">
 
@@ -1637,7 +1686,3 @@ As an bonus, more open-ended exercise, we can investigate all the scientific dec
 The data in this tutorial comes from [Grosmark, Andres D., and György Buzsáki. "Diversity in neural firing dynamics supports both rigid and learned hippocampal sequences." Science 351.6280 (2016): 1440-1443](https://www.science.org/doi/full/10.1126/science.aad1935).
 
 </div>
-
-```{code-cell} ipython3
-
-```

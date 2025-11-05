@@ -9,6 +9,8 @@ kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
+no-search: true
+orphan: true
 ---
 
 ```{code-cell} ipython3
@@ -24,18 +26,12 @@ warnings.filterwarnings(
     message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
     category=UserWarning,
 )
-
-warnings.filterwarnings(
-    "ignore",
-    message="Converting 'd' to numpy.array",
-    category=UserWarning,
-)
 ```
 
 :::{admonition} Download
 :class: important render-all
 
-This notebook can be downloaded as **{nb-download}`visual_coding.ipynb`**. See the button at the top right to download as markdown or pdf.
+This notebook can be downloaded as **{nb-download}`03_visual_coding.ipynb`**. See the button at the top right to download as markdown or pdf.
 :::
 
 # Exploring the Visual Coding Dataset
@@ -70,6 +66,9 @@ import jax
 import matplotlib.pyplot as plt
 import numpy as np
 import pynapple as nap
+
+# configure pynapple to ignore conversion warning
+nap.nap_config.suppress_conversion_warnings = True
 
 import nemos as nmo
 
@@ -204,7 +203,7 @@ plt.xlim(start-.1,end)
 
 In this section, we will select a subset of the neurons that are visually responsive, which we will fit our GLM to.
 
-First, we'll construct a {class}`~pynapple.IntervalSet` called `extended_flashes` which contains the peristimulus time. Right now, our `flashes` `IntervalSet` defines the start and end time for the flashes. In order to make sure we can model the pre-stimulus baseline and any responses to the stimulus being turned off, we would like to expand these intervals to go from 500 msecs before the start of the stimuli to 500 msecs after the end.
+First, we'll construct a [IntervalSet](https://pynapple.org/generated/pynapple.IntervalSet.html) called `extended_flashes` which contains the peristimulus time. Right now, our `flashes` `IntervalSet` defines the start and end time for the flashes. In order to make sure we can model the pre-stimulus baseline and any responses to the stimulus being turned off, we would like to expand these intervals to go from 500 msecs before the start of the stimuli to 500 msecs after the end.
 
 This `IntervalSet` will be the same shape as `flashes` and have the same metadata columns.
 
@@ -261,11 +260,13 @@ selected_units = selected_units[(selected_units["rate"]>2.0)]
 
 <div class="render-all">
 
-Now, in order to determine the responsiveness of the units, it's helpful to use the {func}`~pynapple.process.perievent.compute_perievent` function: this will align units' spiking timestamps with the onset of the stimulus repetitions and take an average over them.
+Now, in order to determine the responsiveness of the units, it's helpful to use the [compute_perievent](https://pynapple.org/generated/pynapple.process.perievent.html#pynapple.process.perievent.compute_perievent) function: this will align units' spiking timestamps with the onset of the stimulus repetitions and take an average over them.
 
 Let's use that function to construct two separate perievent dictionaries, one aligned to the start of the white stimuli, one aligned to the start of the black, and they should run from 250 msec before to 500 msec after the event.
 
 </div>
+
+(compute-perievent)=
 
 ```{code-cell} ipython3
 :tags: [render-all]
@@ -473,7 +474,7 @@ plot_raster_psth(peri_white, selected_units, "white", n_units=len(peri_white))
 
 As we've seen throughout this workshop, it is important to avoid overfitting your model. We've covered two strategies for doing so: either separate your dataset into train and test subsets or set up a cross-validation scheme. Pick one of these approaches and use it when fitting your GLM model in the next section.
 
-You might find it helpful to refer back to the [advanced nemos](sklearn-cv) notebook and / or to use the following pynapple functions: {func}`~pynapple.IntervalSet.set_diff`, {func}`~pynapple.IntervalSet.union`, {func}`~pynapple.TsGroup.restrict` (see [phase precession notebook](phase-precess-cv)).
+You might find it helpful to refer back to the [advanced nemos](sklearn-cv) notebook and / or to use the following pynapple functions: [IntervalSet.set_diff](https://pynapple.org/generated/pynapple.IntervalSet.set_diff.html), [IntervalSet.union](https://pynapple.org/generated/pynapple.IntervalSet.union.html), [TsGroup.restrict](https://pynapple.org/generated/pynapple.TsGroup.restrict.html) (see [phase precession notebook](phase-precess-cv)).
 
 :::{admonition} Hints
 :class: hint
@@ -518,8 +519,15 @@ There are many ways to do this. We'll show fitting a single neuron `GLM` to a va
 
 <div class="render-all">
 
-- Create spike count data. (Hint: review the [current injection notebook](current-inj-basic).)
+- Decide on bin size and create spike count data. (Hint: review the [current injection notebook](current-inj-basic).)
 
+</div>
+
+<div class="render-user">  
+```{code-cell} ipython3
+bin_size = 
+units_counts = 
+```
 </div>
 
 ```{code-cell} ipython3
@@ -532,6 +540,8 @@ units_counts = selected_units.count(bin_size, ep=extended_flashes)
 <div class="render-all">
 
 - Decide on feature(s).
+    - The code block below constructs `stim`, a `TsdFrame` containing 1s whenever the stimulus is being presented (in separate columns for white and black).
+    - You can use this, but you may also want to perform additional computations on `stim` to construct other features.
 - Decide on basis. (Hint: review the [current injection](current-inj-basis) or [place cell](sklearn-basis) notebooks.)
     - If you set the `label` argument for your basis objects, interpreting the output will be easier.
 - Construct design matrix. (Hint: review the [place cell](basis_eval_place_cells) notebook.)
@@ -540,10 +550,10 @@ units_counts = selected_units.count(bin_size, ep=extended_flashes)
 :class: hint dropdown
 
 If you're having trouble coming up with features to include, here are some possibilities:
-- Stimulus. (Review the [current injection](current-inj-prep) notebook.)
-- Stimulus onset. (Hint: you can use {func}`numpy.diff` to find when the stimulus transitions from off to on.)
-- Stimulus offset. (Hint: you can use {func}`numpy.diff` to find when the stimulus transitions from on to off.)
-- For multiple neurons: neuron-to-neuron coupling. (Refer back to the [the head direction notebook from the first day](head_direction_fit) to see an example of fitting coupling filters.)
+- Stimulus, using `stim`. (Review the [current injection](current-inj-prep) notebook.)
+- Stimulus onset. (Hint: you can use [numpy.diff](https://numpy.org/doc/stable/reference/generated/numpy.diff.html) to find when the stimulus transitions from off to on.)
+- Stimulus offset. (Hint: you can use [numpy.diff](https://numpy.org/doc/stable/reference/generated/numpy.diff.html) to find when the stimulus transitions from on to off.)
+- For multiple neurons: neuron-to-neuron coupling, using `units_counts`. (Refer back to the [the head direction notebook from the first day](head-direction-fit) to see an example of fitting coupling filters.)
 
 For the stimuli predictors, you probably want to model white and black separately.
 
@@ -558,43 +568,54 @@ Here we'll model three separate components of the response:
 - Full flash duration (smoothing): We will convolve the entire flash period with a third basis function, serving as a smoother to capture more sustained or slowly varying effects across the full stimulus window.
 
 ```{code-cell} ipython3
+:tags: [render-all]
+
 # Create a TsdFrame filled by zeros, for the size of units_counts
 stim = nap.TsdFrame(
     t=units_counts.t,
     d=np.zeros((len(units_counts), 2)), 
     columns = ['white', 'black']
 )
+
 # Check whether there is a flash within a given bin of spikes
-# If there is not, put a nan in that index
 idx_white = flashes_white.in_interval(units_counts)
 idx_black = flashes_black.in_interval(units_counts)
 
-# Replace everything that is not nan with 1 in the corresponding column
+# Put a 1 at those locations
 stim.d[~np.isnan(idx_white), 0] = 1
 stim.d[~np.isnan(idx_black), 1] = 1
+```
 
+```{code-cell} ipython3
 white_onset = nap.Tsd(
     t=stim.t, 
     d=np.hstack((0,np.diff(stim["white"])==1)),
-    time_support = units_counts.time_support
+    time_support=units_counts.time_support
 )
 
 white_offset = nap.Tsd(
     t=stim.t, 
     d=np.hstack((0,np.diff(stim["white"])==-1)),
-    time_support = units_counts.time_support
+    time_support=units_counts.time_support
 )
 
 black_onset = nap.Tsd(
     t=stim.t, 
     d=np.hstack((0,np.diff(stim["black"])==1)),
-    time_support = units_counts.time_support
+    time_support=units_counts.time_support
 )
 black_offset = nap.Tsd(
     t=stim.t, 
     d=np.hstack((0,np.diff(stim["black"])==-1)),
-    time_support = units_counts.time_support
+    time_support=units_counts.time_support
 )
+
+# OR
+
+white_onset = nap.Ts(flashes_white.start).count(bin_size, ep=units_counts.time_support)
+black_onset = nap.Ts(flashes_black.start).count(bin_size, ep=units_counts.time_support)
+white_offset = nap.Ts(flashes_white.end).count(bin_size, ep=units_counts.time_support)
+black_offset = nap.Ts(flashes_black.end).count(bin_size, ep=units_counts.time_support)
 ```
 
 Now set up the basis functions
@@ -679,12 +700,44 @@ X_train = additive_basis.compute_features(
 
 <div class="render-all">
 
-- Decide on regularization. (Hint: review Edoardo's presentation and the [place cell](sklearn-cv) notebook.)
+- Decide on regularization. (Hint: review [Edoardo's presentation](https://users.flatironinstitute.org/~wbroderick/presentations/sfn-2025/model_selection.pdf) and the [place cell](sklearn-cv) notebook.)
 - Initialize GLM. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn-cv) notebooks.)
 - Call fit. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn-cv) notebooks.)
-- Visualize result on PSTHs. (Note that you should use {func}`~pynapple.process.perievent.compute_perievent_continuous` and the model predictions here! Otherwise, this looks very similar to our PSTH calculation above.)
 
-When you go to plot the PSTH from model predictions and compare them against regular data, the following helper function should help (it works for one or multiple neurons).
+</div>
+
+
+Here's an example of how this could look for a single neuron. To do multiple neurons, `model` should be a `PopulationGLM` and fit to `units_counts.restrict(flashes_train)` instead.
+
+(The following regularizer strength comes from cross-validation.)
+
+```{code-cell} ipython3
+regularizer_strength = 7.745e-06
+# Initialize model object of a single unit
+model = nmo.glm.GLM(
+    regularizer="Ridge",
+    regularizer_strength=regularizer_strength,
+    solver_name="LBFGS", 
+)
+# Choose an example unit
+unit_id = 951768318
+
+# Get counts for train and test for said unit
+u_counts = units_counts.loc[unit_id]
+```
+
+```{code-cell} ipython3
+model.fit(X_train, u_counts.restrict(flashes_train))
+```
+
+### Visualize model PSTH
+
+<div class="render-all">
+- Generate model predictions (remember to compute to spikes / sec!). (Hint: )
+- Compute model PSTHs. (Note that you should use [compute_perievent_continuous](https://pynapple.org/generated/pynapple.process.perievent.html#pynapple.process.perievent.compute_perievent_continuous) here! Otherwise, this looks very similar to our PSTH calculation [above](compute-perievent).)
+- Visualize these PSTHs. 
+
+The following helper function should help with the visualization step (it works for one or multiple neurons).
 
 </div>
 
@@ -768,7 +821,7 @@ def plot_pop_psth(
 
 <div class="render-all">
 
-The following cell shows you how to call this visualization function. Its arguments are:
+The following cell shows you how to call this visualization function for a PSTH computed from a `GLM` (i.e., single neuron fit). Its arguments are:
 - The PSTH object computed from the data. This should only contain the responses to either the black or white flashes, but can contain the PSTHs from one or more-than-one neurons.
 - A string, either `"white"` or `"black"`, which determines some of the styling.
 - Any number of keyword arguments (e.g., `predictions=` shown below) whose values are a tuple of `(style, peri)`, where `style` is a valid matplotlib style (e.g., `"red"`) and `peri` is additional PSTHs to plot. Expected use is, as below, to plot the predictions in a different color on top of the actual data.
@@ -780,30 +833,6 @@ plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_
 ```
 
 </div>
-
-
-Here's an example of how this could look for a single neuron. To do multiple neurons, `model` should be a `PopulationGLM` and fit to `units_counts.restrict(flashes_train)` instead.
-
-(The following regularizer strength comes from cross-validation.)
-
-```{code-cell} ipython3
-regularizer_strength = 7.745e-06
-# Initialize model object of a single unit
-model = nmo.glm.GLM(
-    regularizer="Ridge",
-    regularizer_strength=regularizer_strength,
-    solver_name="LBFGS", 
-)
-# Choose an example unit
-unit_id = 951768318
-
-# Get counts for train and test for said unit
-u_counts = units_counts.loc[unit_id]
-```
-
-```{code-cell} ipython3
-model.fit(X_train, u_counts.restrict(flashes_train))
-```
 
 ```{code-cell} ipython3
 # Use predict to obtain the firing rates
@@ -834,6 +863,65 @@ peri_black_pred_unit = nap.compute_perievent_continuous(
 # visualize predicted psth
 plot_pop_psth(peri_white[unit_id], "white", predictions=("red", peri_white_pred_unit))
 plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_unit))
+```
+
+### Visualize learned model filters
+
+<div class="render-all">
+
+- "Expand" model coefficients into filters.
+- Visualize these filters.
+
+When using basis functions, GLM coefficients are hard to interpret directly. Recall in the [current injection notebook](visualize-filter); we can multiply these coefficients by the basis functions to create the filter for visualization. This was handled under the hood in that notebook, but you can do it yourself using [numpy.matmul](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html) or [numpy.einsum](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html).
+
+If you get stuck here, you can expand the following dropdown to see a hint and then expand the one after that to see a possible way of doing this.
+
+:::{admonition} How to compute the filters?
+:class: hint dropdown
+
+There are two components here:
+
+1. If you've used a single basis object, your `GLM` will have weights of shape `(n_basis_funcs,)` (equivalently, a `PopulationGLM` will have weights of shape `(n_basis_funcs, n_neurons)`). If you call your basis's [`evaluate_on_grid`](https://nemos.readthedocs.io/en/latest/generated/basis/nemos.basis.RaisedCosineLogConv.evaluate_on_grid.html#nemos.basis.RaisedCosineLogConv.evaluate_on_grid) method, you'll get back an array of shape `(window_size, n_basis_funcs)` containing the basis functions. You can then use either [numpy.matmul](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html) or [numpy.einsum](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html) to multiply the weights by the functions, computing the filter.
+
+2. If you've used more than one basis object, how do you know which weights correspond to which basis? 
+
+    You can slice the weights yourselves: each basis will have `n_basis_funcs` weights associated with it (where this is the argument passed on initialization and also an attribute of the object), and so you can do some algebra to figure out which weights correspond to which basis.
+
+    However, if you have used a single [AdditiveBasis](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.AdditiveBasis.html) object to construct your GLM, you can take advantage of its [`split_by_feature` method](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.AdditiveBasis.split_by_feature.html#nemos.basis._basis.AdditiveBasis.split_by_feature) to do the splitting for you.
+
+:::
+
+:::{admonition} Code to compute the filters
+:class: hint dropdown
+
+If you have used a single [AdditiveBasis](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.AdditiveBasis.html) object to construct your GLM (called `additive_basis` in the following), you can take advantage of its [`split_by_feature` method](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.AdditiveBasis.split_by_feature.html#nemos.basis._basis.AdditiveBasis.split_by_feature):
+
+```{code-block} python
+weights = additive_basis.split_by_feature(model.coef_, 0)
+filters = {}
+for k, v in weights.items():
+    this_basis = additive_basis[k]
+    _, this_basis = this_basis.evaluate_on_grid(this_basis.window_size)
+    filters[k] = np.matmul(this_basis, v)
+```
+
+`filters` is then a dictionary whose keys match the `label` of each basis object and whose values are numpy arrays.
+
+:::
+
+</div>
+
+```{code-cell} ipython3
+weights = additive_basis.split_by_feature(model.coef_, 0)
+filters = {}
+for k, v in weights.items():
+    this_basis = additive_basis[k]
+    _, this_basis = this_basis.evaluate_on_grid(this_basis.window_size)
+    filters[k] = np.matmul(this_basis, v)
+fig, axes = plt.subplots(1, len(filters), figsize=(3*len(filters), 3))
+for ax, (k, v)  in zip(axes, filters.items()):
+    ax.plot(v)
+    ax.set_title(k)
 ```
 
 ### Score your model
