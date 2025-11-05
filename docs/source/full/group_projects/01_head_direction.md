@@ -9,6 +9,8 @@ kernelspec:
   name: python3
   display_name: Python 3 (ipykernel)
   language: python
+no-search:
+orphan:
 ---
 
 # Group Project 1 : Analyzing head-direction cells with Pynapple and Nemos
