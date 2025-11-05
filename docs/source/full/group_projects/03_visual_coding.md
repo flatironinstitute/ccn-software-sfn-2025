@@ -10,6 +10,7 @@ kernelspec:
   language: python
   name: python3
 no-search:
+orphan:
 ---
 
 ```{code-cell} ipython3
@@ -703,9 +704,41 @@ X_train = additive_basis.compute_features(
 - Decide on regularization. (Hint: review [Edoardo's presentation](https://users.flatironinstitute.org/~wbroderick/presentations/sfn-2025/model_selection.pdf) and the [place cell](sklearn-cv) notebook.)
 - Initialize GLM. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn-cv) notebooks.)
 - Call fit. (Hint: review the [current injection](current-inj-glm) or [place cell](sklearn-cv) notebooks.)
-- Visualize result on PSTHs. (Note that you should use {func}`~pynapple.process.perievent.compute_perievent_continuous` and the model predictions here! Otherwise, this looks very similar to our PSTH calculation above.)
 
-When you go to plot the PSTH from model predictions and compare them against regular data, the following helper function should help (it works for one or multiple neurons).
+</div>
+
+
+Here's an example of how this could look for a single neuron. To do multiple neurons, `model` should be a `PopulationGLM` and fit to `units_counts.restrict(flashes_train)` instead.
+
+(The following regularizer strength comes from cross-validation.)
+
+```{code-cell} ipython3
+regularizer_strength = 7.745e-06
+# Initialize model object of a single unit
+model = nmo.glm.GLM(
+    regularizer="Ridge",
+    regularizer_strength=regularizer_strength,
+    solver_name="LBFGS", 
+)
+# Choose an example unit
+unit_id = 951768318
+
+# Get counts for train and test for said unit
+u_counts = units_counts.loc[unit_id]
+```
+
+```{code-cell} ipython3
+model.fit(X_train, u_counts.restrict(flashes_train))
+```
+
+### Visualize model PSTH
+
+<div class="render-all">
+- Generate model predictions (remember to compute to spikes / sec!). (Hint: )
+- Compute model PSTHs. (Note that you should use [compute_perievent_continuous](https://pynapple.org/generated/pynapple.process.perievent.html#pynapple.process.perievent.compute_perievent_continuous) here! Otherwise, this looks very similar to our PSTH calculation [above](compute-perievent).)
+- Visualize these PSTHs. 
+
+The following helper function should help with the visualization step (it works for one or multiple neurons).
 
 </div>
 
@@ -789,7 +822,7 @@ def plot_pop_psth(
 
 <div class="render-all">
 
-The following cell shows you how to call this visualization function. Its arguments are:
+The following cell shows you how to call this visualization function for a PSTH computed from a `GLM` (i.e., single neuron fit). Its arguments are:
 - The PSTH object computed from the data. This should only contain the responses to either the black or white flashes, but can contain the PSTHs from one or more-than-one neurons.
 - A string, either `"white"` or `"black"`, which determines some of the styling.
 - Any number of keyword arguments (e.g., `predictions=` shown below) whose values are a tuple of `(style, peri)`, where `style` is a valid matplotlib style (e.g., `"red"`) and `peri` is additional PSTHs to plot. Expected use is, as below, to plot the predictions in a different color on top of the actual data.
@@ -801,30 +834,6 @@ plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_
 ```
 
 </div>
-
-
-Here's an example of how this could look for a single neuron. To do multiple neurons, `model` should be a `PopulationGLM` and fit to `units_counts.restrict(flashes_train)` instead.
-
-(The following regularizer strength comes from cross-validation.)
-
-```{code-cell} ipython3
-regularizer_strength = 7.745e-06
-# Initialize model object of a single unit
-model = nmo.glm.GLM(
-    regularizer="Ridge",
-    regularizer_strength=regularizer_strength,
-    solver_name="LBFGS", 
-)
-# Choose an example unit
-unit_id = 951768318
-
-# Get counts for train and test for said unit
-u_counts = units_counts.loc[unit_id]
-```
-
-```{code-cell} ipython3
-model.fit(X_train, u_counts.restrict(flashes_train))
-```
 
 ```{code-cell} ipython3
 # Use predict to obtain the firing rates
@@ -856,6 +865,65 @@ peri_black_pred_unit = nap.compute_perievent_continuous(
 # visualize predicted psth
 plot_pop_psth(peri_white[unit_id], "white", predictions=("red", peri_white_pred_unit))
 plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_unit))
+```
+
+### Visualize learned model filters
+
+<div class="render-all">
+
+- "Expand" model coefficients into filters.
+- Visualize these filters.
+
+When using basis functions, GLM coefficients are hard to interpret directly. Recall in the [current injection notebook](visualize-filter); we can multiply these coefficients by the basis functions to create the filter for visualization. This was handled under the hood in that notebook, but you can do it yourself using [numpy.matmul](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html) or [numpy.einsum](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html).
+
+If you get stuck here, you can expand the following dropdown to see a hint and then expand the one after that to see a possible way of doing this.
+
+:::{admonition} How to compute the filters?
+:class: hint dropdown
+
+There are two components here:
+
+1. If you've used a single basis object, your `GLM` will have weights of shape `(n_basis_funcs,)` (equivalently, a `PopulationGLM` will have weights of shape `(n_basis_funcs, n_neurons)`). If you call your basis's [`evaluate_on_grid`](https://nemos.readthedocs.io/en/latest/generated/basis/nemos.basis.RaisedCosineLogConv.evaluate_on_grid.html#nemos.basis.RaisedCosineLogConv.evaluate_on_grid) method, you'll get back an array of shape `(window_size, n_basis_funcs)` containing the basis functions. You can then use either [numpy.matmul](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html) or [numpy.einsum](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html) to multiply the weights by the functions, computing the filter.
+
+2. If you've used more than one basis object, how do you know which weights correspond to which basis? 
+
+    You can slice the weights yourselves: each basis will have `n_basis_funcs` weights associated with it (where this is the argument passed on initialization and also an attribute of the object), and so you can do some algebra to figure out which weights correspond to which basis.
+
+    However, if you have used a single [AdditiveBasis](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.AdditiveBasis.html) object to construct your GLM, you can take advantage of its [`split_by_feature` method](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.AdditiveBasis.split_by_feature.html#nemos.basis._basis.AdditiveBasis.split_by_feature) to do the splitting for you.
+
+:::
+
+:::{admonition} Code to compute the filters
+:class: hint dropdown
+
+If you have used a single [AdditiveBasis](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.AdditiveBasis.html) object to construct your GLM (called `additive_basis` in the following), you can take advantage of its [`split_by_feature` method](https://nemos.readthedocs.io/en/latest/generated/_basis/nemos.basis._basis.AdditiveBasis.split_by_feature.html#nemos.basis._basis.AdditiveBasis.split_by_feature):
+
+```{code-block} python
+weights = additive_basis.split_by_feature(model.coef_, 0)
+filters = {}
+for k, v in weights.items():
+    this_basis = additive_basis[k]
+    _, this_basis = this_basis.evaluate_on_grid(this_basis.window_size)
+    filters[k] = np.matmul(this_basis, v)
+```
+
+`filters` is then a dictionary whose keys match the `label` of each basis object and whose values are numpy arrays.
+
+:::
+
+</div>
+
+```{code-cell} ipython3
+weights = additive_basis.split_by_feature(model.coef_, 0)
+filters = {}
+for k, v in weights.items():
+    this_basis = additive_basis[k]
+    _, this_basis = this_basis.evaluate_on_grid(this_basis.window_size)
+    filters[k] = np.matmul(this_basis, v)
+fig, axes = plt.subplots(1, len(filters), figsize=(3*len(filters), 3))
+for ax, (k, v)  in zip(axes, filters.items()):
+    ax.plot(v)
+    ax.set_title(k)
 ```
 
 ### Score your model
