@@ -36,13 +36,17 @@ def main():
     docs_nb_dir_gp = repo_dir / "docs" / "source" / "full" / "group_projects"
     docs_nb_dir = repo_dir / "docs" / "source" / "users"
     print("Preparing notebooks...")
-    shutil.rmtree(docs_nb_dir, ignore_errors=True)
-    shutil.rmtree(repo_dir / "docs" / "source" / "presenters", ignore_errors=True)
+    shutil.rmtree(docs_nb_dir / "live_coding", ignore_errors=True)
+    shutil.rmtree(docs_nb_dir / "group_projects", ignore_errors=True)
+    shutil.rmtree(repo_dir / "docs" / "source" / "_static" / "_check_figs", ignore_errors=True)
+    shutil.rmtree(repo_dir / "docs" / "source" / "presenters" / "live_coding", ignore_errors=True)
+    shutil.rmtree(repo_dir / "docs" / "source" / "presenters" / "group_projects", ignore_errors=True)
     subprocess.run(["python", repo_dir / "scripts" / "strip_text.py"], cwd=repo_dir)
     for f in docs_nb_dir_gp.glob("*md"):
         if "index.md" in f.name:
             continue
-        subprocess.run(["jupytext", "--execute", f.absolute()])
+        subprocess.run(["jupytext", "--execute", f.absolute(), f.with_name("tmp.md")])
+        os.remove(f.with_name("tmp.md"))
     for f in docs_nb_dir.glob("**/*md"):
         output_f = (nb_dir / f.parent.name / f.name.replace("md", "ipynb")).absolute()
         output_f.parent.mkdir(exist_ok=True)
