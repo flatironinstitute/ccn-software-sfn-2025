@@ -43,7 +43,7 @@ warnings.filterwarnings(
 :::{admonition} Download
 :class: important render-all
 
-This notebook can be downloaded as **{nb-download}`current_injection.ipynb`**. See the button at the top right to download as markdown or pdf.
+This notebook can be downloaded as **{nb-download}`02_current_injection.ipynb`**. See the button at the top right to download as markdown or pdf.
 :::
 
 # Introduction to GLM

@@ -13,6 +13,28 @@ no-search:
 orphan:
 ---
 
+```{code-cell} ipython3
+:tags: [hide-input, render-all]
+
+%matplotlib inline
+%load_ext autoreload
+%autoreload 2
+import warnings
+
+warnings.filterwarnings(
+    "ignore",
+    message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
+    category=UserWarning,
+)
+
+```
+
+:::{admonition} Download
+:class: important render-all
+
+This notebook can be downloaded as **{nb-download}`02_phase_precession.ipynb`**. See the button at the top right to download as markdown or pdf.
+:::
+
 # Group Project 2: Analyzing hippocampal place cells with Pynapple and NeMoS
 
 <div class="render-all">
@@ -43,9 +65,6 @@ For part 2, we will by applying NeMoS to explore the dataset further by:
 ```{code-cell} ipython3
 :tags: [render-all]
 
-# suppress warnings
-import warnings
-warnings.simplefilter("ignore")
 
 # imports
 import math
@@ -63,6 +82,9 @@ import workshop_utils
 # necessary for animation
 import nemos as nmo
 plt.style.use(nmo.styles.plot_style)
+
+# configure pynapple to ignore conversion warning
+nap.nap_config.suppress_conversion_warnings = True
 ```
 
 ## Part 1: Using Pynapple to identify phase precession and hippocampal sequences

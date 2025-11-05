@@ -27,17 +27,12 @@ warnings.filterwarnings(
     category=UserWarning,
 )
 
-warnings.filterwarnings(
-    "ignore",
-    message="Converting 'd' to numpy.array",
-    category=UserWarning,
-)
 ```
 
 :::{admonition} Download
 :class: important render-all
 
-This notebook can be downloaded as **{nb-download}`visual_coding.ipynb`**. See the button at the top right to download as markdown or pdf.
+This notebook can be downloaded as **{nb-download}`03_visual_coding.ipynb`**. See the button at the top right to download as markdown or pdf.
 :::
 
 # Exploring the Visual Coding Dataset
@@ -72,6 +67,9 @@ import jax
 import matplotlib.pyplot as plt
 import numpy as np
 import pynapple as nap
+
+# configure pynapple to ignore conversion warning
+nap.nap_config.suppress_conversion_warnings = True
 
 import nemos as nmo
 
@@ -555,7 +553,7 @@ If you're having trouble coming up with features to include, here are some possi
 - Stimulus, using `stim`. (Review the [current injection](current-inj-prep) notebook.)
 - Stimulus onset. (Hint: you can use [numpy.diff](https://numpy.org/doc/stable/reference/generated/numpy.diff.html) to find when the stimulus transitions from off to on.)
 - Stimulus offset. (Hint: you can use [numpy.diff](https://numpy.org/doc/stable/reference/generated/numpy.diff.html) to find when the stimulus transitions from on to off.)
-- For multiple neurons: neuron-to-neuron coupling, using `units_counts`. (Refer back to the [the head direction notebook from the first day](head_direction_fit) to see an example of fitting coupling filters.)
+- For multiple neurons: neuron-to-neuron coupling, using `units_counts`. (Refer back to the [the head direction notebook from the first day](head-direction-fit) to see an example of fitting coupling filters.)
 
 For the stimuli predictors, you probably want to model white and black separately.
 

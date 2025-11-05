@@ -13,6 +13,28 @@ no-search:
 orphan:
 ---
 
+```{code-cell} ipython3
+:tags: [hide-input, render-all]
+
+%matplotlib inline
+%load_ext autoreload
+%autoreload 2
+import warnings
+
+warnings.filterwarnings(
+    "ignore",
+    message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
+    category=UserWarning,
+)
+```
+
+:::{admonition} Download
+:class: important render-all
+
+This notebook can be downloaded as **{nb-download}`01_head_direction.ipynb`**. See the button at the top right to download as markdown or pdf.
+:::
+
+
 # Group Project 1 : Analyzing head-direction cells with Pynapple and Nemos
 
 <div class="render-all">
@@ -628,7 +650,7 @@ One may think of padding the window (with zeros for example) but this may genera
 To avoid that, we can simply restrict our analysis to times $t$ larger than the window and NaN-pad earlier
 time-points;
 
-You can construct this feature matrix with the [`HistoryConv`](nemos.basis.HistoryConv) basis.
+You can construct this feature matrix with the [`HistoryConv`](https://nemos.readthedocs.io/en/latest/generated/basis/nemos.basis.HistoryConv.html#nemos.basis.HistoryConv) basis.
 
 **Question: Can you:**
     - Convert the window size in number of bins (call it `window_size`)
@@ -1187,7 +1209,7 @@ print(f"Convolved count shape: {convolved_count.shape}")
 <div class="render-all">
 
 This is an all-to-all neurons model.
-We are using the class [`PopulationGLM`](nemos.glm.PopulationGLM) to fit the whole population at once.
+We are using the class [`PopulationGLM`](https://nemos.readthedocs.io/en/latest/generated/glm/nemos.glm.PopulationGLM.html) to fit the whole population at once.
 
 
 Once we condition on past activity, log-likelihood of the population is the sum of the log-likelihood
