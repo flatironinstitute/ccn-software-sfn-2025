@@ -50,6 +50,7 @@ This notebook can be downloaded as **{nb-download}`nemos_advanced.ipynb`**. See 
 
 :::
 
+(sklearn-nb)=
 # NeMoS Advanced: Cross-Validation and Model Selection
 
 
@@ -299,7 +300,7 @@ print("Are the design matrices equivalent?", np.all(X.d == X_numpy.d))
 (sklearn-cv)=
 ### How to know when to regularize?
 
-In the [head direction](./head_direction.md) notebook, we fit the all-to-all connectivity of the head-tuning dataset using the Ridge regularizer, and we learned that regularization can combat overfitting. What we didn't show is how to choose a proper regularizer. Generally, too much regularization leads to underfitting, i.e. the model is too simple and doesn't capture the neural variability well. To little regularization may overfit, especially when we have a large number of parameters, i.e. out model will capture both signal and noise. This is what we saw in the head direction notebook when we used the raw spike history as predictor. 
+In the [head direction](head-direction-fit) notebook, we fit the all-to-all connectivity of the head-tuning dataset using the Ridge regularizer, and we learned that regularization can combat overfitting. What we didn't show is how to choose a proper regularizer. Generally, too much regularization leads to underfitting, i.e. the model is too simple and doesn't capture the neural variability well. To little regularization may overfit, especially when we have a large number of parameters, i.e. out model will capture both signal and noise. This is what we saw in the head direction notebook when we used the raw spike history as predictor. 
 
 What we are looking for is a regularization strength that balances out the bias towards simpler models with the variance necessary to explain the data. However, how do we know how much we should regularize? One thing we can do is use cross-validation to see whether model performance on unseen data improves with regularization (behind the scenes, this is what we did!). We'll walk through how to do that now.
 

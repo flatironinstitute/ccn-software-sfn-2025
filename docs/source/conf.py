@@ -21,22 +21,12 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_togglebutton',
     'sphinx_design',
-    'sphinx.ext.intersphinx'
 ]
-
-# https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
-intersphinx_mapping = {
-    'nemos': ("https://nemos.readthedocs.io/en/latest/", None),
-    'pynapple': ("https://pynapple.org", None),
-    'numpy': ("https://numpy.org/doc/stable", None),
-}
 
 templates_path = []
 exclude_patterns = []
 
 nitpicky = True
-# raise an error if exec error in notebooks
-nb_execution_raise_on_error = True
 
 sphinxemoji_style = 'twemoji'
 

@@ -205,7 +205,7 @@ plt.xlim(start-.1,end)
 
 In this section, we will select a subset of the neurons that are visually responsive, which we will fit our GLM to.
 
-First, we'll construct a {class}`~pynapple.IntervalSet` called `extended_flashes` which contains the peristimulus time. Right now, our `flashes` `IntervalSet` defines the start and end time for the flashes. In order to make sure we can model the pre-stimulus baseline and any responses to the stimulus being turned off, we would like to expand these intervals to go from 500 msecs before the start of the stimuli to 500 msecs after the end.
+First, we'll construct a [IntervalSet](https://pynapple.org/generated/pynapple.IntervalSet.html) called `extended_flashes` which contains the peristimulus time. Right now, our `flashes` `IntervalSet` defines the start and end time for the flashes. In order to make sure we can model the pre-stimulus baseline and any responses to the stimulus being turned off, we would like to expand these intervals to go from 500 msecs before the start of the stimuli to 500 msecs after the end.
 
 This `IntervalSet` will be the same shape as `flashes` and have the same metadata columns.
 
@@ -262,12 +262,13 @@ selected_units = selected_units[(selected_units["rate"]>2.0)]
 
 <div class="render-all">
 
-Now, in order to determine the responsiveness of the units, it's helpful to use the {func}`~pynapple.process.perievent.compute_perievent` function: this will align units' spiking timestamps with the onset of the stimulus repetitions and take an average over them.
+Now, in order to determine the responsiveness of the units, it's helpful to use the [compute_perievent](https://pynapple.org/generated/pynapple.process.perievent.html#pynapple.process.perievent.compute_perievent) function: this will align units' spiking timestamps with the onset of the stimulus repetitions and take an average over them.
 
 Let's use that function to construct two separate perievent dictionaries, one aligned to the start of the white stimuli, one aligned to the start of the black, and they should run from 250 msec before to 500 msec after the event.
 
 </div>
 
+(compute-perievent)=
 ```{code-cell} ipython3
 :tags: [render-all]
 
@@ -474,7 +475,7 @@ plot_raster_psth(peri_white, selected_units, "white", n_units=len(peri_white))
 
 As we've seen throughout this workshop, it is important to avoid overfitting your model. We've covered two strategies for doing so: either separate your dataset into train and test subsets or set up a cross-validation scheme. Pick one of these approaches and use it when fitting your GLM model in the next section.
 
-You might find it helpful to refer back to the [advanced nemos](sklearn-cv) notebook and / or to use the following pynapple functions: {func}`~pynapple.IntervalSet.set_diff`, {func}`~pynapple.IntervalSet.union`, {func}`~pynapple.TsGroup.restrict` (see [phase precession notebook](phase-precess-cv)).
+You might find it helpful to refer back to the [advanced nemos](sklearn-cv) notebook and / or to use the following pynapple functions: [IntervalSet.set_diff](https://pynapple.org/generated/pynapple.IntervalSet.set_diff.html), [IntervalSet.union](https://pynapple.org/generated/pynapple.IntervalSet.union.html), [TsGroup.restrict](https://pynapple.org/generated/pynapple.TsGroup.restrict.html) (see [phase precession notebook](phase-precess-cv)).
 
 :::{admonition} Hints
 :class: hint
@@ -551,8 +552,8 @@ units_counts = selected_units.count(bin_size, ep=extended_flashes)
 
 If you're having trouble coming up with features to include, here are some possibilities:
 - Stimulus, using `stim`. (Review the [current injection](current-inj-prep) notebook.)
-- Stimulus onset. (Hint: you can use {func}`numpy.diff` to find when the stimulus transitions from off to on.)
-- Stimulus offset. (Hint: you can use {func}`numpy.diff` to find when the stimulus transitions from on to off.)
+- Stimulus onset. (Hint: you can use [numpy.diff](https://numpy.org/doc/stable/reference/generated/numpy.diff.html) to find when the stimulus transitions from off to on.)
+- Stimulus offset. (Hint: you can use [numpy.diff](https://numpy.org/doc/stable/reference/generated/numpy.diff.html) to find when the stimulus transitions from on to off.)
 - For multiple neurons: neuron-to-neuron coupling, using `units_counts`. (Refer back to the [the head direction notebook from the first day](head_direction_fit) to see an example of fitting coupling filters.)
 
 For the stimuli predictors, you probably want to model white and black separately.

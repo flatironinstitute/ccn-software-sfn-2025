@@ -10,7 +10,7 @@ We are excited to see everyone at the Flatiron Center for Computational Neurosci
 
 Over the course of this two-day workshop, we will walk you through the notebooks included on this site in order to demonstrate how to use pynapple and NeMoS to analyze and visualize your data.
 
-Before the workshop, please try to follow the [setup](#setup) instructions below to install everything on your personal laptop. If you run into issues, first check the [](#troubleshooting) section on this page to see if there's a solution for your problem and then, if you are unable to solve the problem, come to our installation help session in the Omni San Diego Hotel, Gallery 1, from noon to 6pm on Wednesday, November 12.
+Before the workshop, please try to follow the [setup](#setup) instructions below to install everything on your personal laptop. If you run into issues, first check the [troubleshooting](#troubleshooting) section on this page to see if there's a solution for your problem and then, if you are unable to solve the problem, come to our installation help session in the Omni San Diego Hotel, Gallery 1, from noon to 6pm on Wednesday, November 12.
 
 We will use [jupyter lab](https://jupyterlab.readthedocs.io/en/latest/) throughout the workshop. If you are unfamiliar with jupyter lab, please come to our "Intro to Jupyter Lab" session at 4:30pm in the Omni San Diego Hotel, Gallery 1, at 4:30pm on Wednesday, November 12.
 

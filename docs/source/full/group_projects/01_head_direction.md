@@ -1048,6 +1048,7 @@ Shape should be `(n_samples, n_basis_func * n_neurons)`
 print(f"Convolved count shape: {convolved_count.shape}")
 ```
 
+(head-direction-fit)=
 ### Fitting the Model
 
 <div class="render-all">
