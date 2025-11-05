@@ -45,7 +45,7 @@ def main():
     for f in docs_nb_dir_gp.glob("*md"):
         if "index.md" in f.name:
             continue
-        subprocess.run(["jupytext", "--execute", f.absolute(), f.with_name("tmp.md")])
+        subprocess.run(["jupytext", "--execute", f.absolute(), "-o", f.with_name("tmp.md")])
         os.remove(f.with_name("tmp.md"))
     for f in docs_nb_dir.glob("**/*md"):
         output_f = (nb_dir / f.parent.name / f.name.replace("md", "ipynb")).absolute()
