@@ -167,6 +167,7 @@ cython_debug/
 docs/just_code
 docs/source/users
 docs/source/presenters
+docs/source/_static/_check_figs
 notebooks/
 data/
 

@@ -859,7 +859,6 @@ peri_black_pred_unit = nap.compute_perievent_continuous(
 ```
 
 ```{code-cell} ipython3
-
 # visualize predicted psth
 plot_pop_psth(peri_white[unit_id], "white", predictions=("red", peri_white_pred_unit))
 plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_unit))
