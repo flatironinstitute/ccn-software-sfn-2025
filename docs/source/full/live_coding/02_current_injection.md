@@ -46,7 +46,7 @@ warnings.filterwarnings(
 This notebook can be downloaded as **{nb-download}`02_current_injection.ipynb`**. See the button at the top right to download as markdown or pdf.
 :::
 
-# Introduction to GLM
+# Introduction to GLM and NeMoS
 
 For our first example, we will look at a very simple dataset: patch-clamp
 recordings from a single neuron in layer 4 of mouse primary visual cortex. This

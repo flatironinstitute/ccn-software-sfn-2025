@@ -34,7 +34,7 @@ warnings.filterwarnings(
 This notebook can be downloaded as **{nb-download}`02_phase_precession.ipynb`**. See the button at the top right to download as markdown or pdf.
 :::
 
-# Group Project 2: Analyzing hippocampal place cells with Pynapple and NeMoS
+# Analyzing hippocampal place cells with Pynapple and NeMoS
 
 <div class="render-all">
     

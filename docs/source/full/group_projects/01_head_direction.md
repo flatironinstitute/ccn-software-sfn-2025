@@ -35,7 +35,7 @@ This notebook can be downloaded as **{nb-download}`01_head_direction.ipynb`**. S
 :::
 
 
-# Group Project 1 : Analyzing head-direction cells with Pynapple and Nemos
+# Analyzing head-direction cells with Pynapple and Nemos
 
 <div class="render-all">
 
