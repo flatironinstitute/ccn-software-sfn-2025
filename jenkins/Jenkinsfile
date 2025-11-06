@@ -30,6 +30,7 @@ pipeline {
               source $HOME/.local/bin/env
               uv sync
               NEMOS_DATA_DIR=./data/ uv run python src/workshop_utils/fetch.py
+              uv run python -c "import pynapple as nap; print(nap.load_file('flashes.npz'))"
               uv run python ./scripts/strip_text.py
               uv run make -C docs html O="-T -W"
               
@@ -92,7 +93,7 @@ pipeline {
       }
       post {
         always {
-          archiveArtifacts artifacts: "data/*", fingerprint: true
+          archiveArtifacts artifacts: "data/**", fingerprint: true
           dir("$HOME") {
             deleteDir()
           }
