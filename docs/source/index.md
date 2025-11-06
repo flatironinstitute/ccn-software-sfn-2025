@@ -340,6 +340,7 @@ Some usage notes:
 
 ```{toctree}
 :titlesonly:
+cheatsheet.md
 can_you_read.md
 ```
 
