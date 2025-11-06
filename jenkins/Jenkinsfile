@@ -30,8 +30,9 @@ pipeline {
               source $HOME/.local/bin/env
               uv sync
               NEMOS_DATA_DIR=./data/ uv run python src/workshop_utils/fetch.py
-              uv run python -c "import pynapple as nap; flashes=nap.load_file('data/visual_coding_data.zip.unzip/flashes.npz'); print(flashes); print(flashes['color']); print(flashes['color'] == '1.0')"
+              uv run python -c "import pynapple as nap; flashes=nap.load_file('data/visual_coding_data.zip.unzip/flashes.npz'); print(flashes); print(flashes['color']); print(flashes['color'] == '1.0'); print(flashes[flashes['color'] == '1.0'])"
               uv run python ./scripts/strip_text.py
+              uv run jupytext --execute docs/source/full/group_projects/03_visual_coding.md
               uv run make -C docs html O="-T -W"
               
               # we move this to a separate directory to reduce the risk of the checkout
