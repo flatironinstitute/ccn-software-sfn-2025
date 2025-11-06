@@ -872,7 +872,7 @@ plot_pop_psth(peri_black[unit_id], "black", predictions=("red", peri_black_pred_
 - "Expand" model coefficients into filters.
 - Visualize these filters.
 
-When using basis functions, GLM coefficients are hard to interpret directly. Recall in the [current injection notebook](visualize-filter); we can multiply these coefficients by the basis functions to create the filter for visualization. This was handled under the hood in that notebook, but you can do it yourself using [numpy.matmul](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html) or [numpy.einsum](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html).
+When using basis functions, GLM coefficients are hard to interpret directly. Recall in the [current injection](visualize-filter) and [head direction](head-direction-basis) notebooks; we can multiply these coefficients by the basis functions to create the filter for visualization. This can be done using [numpy.matmul](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html) or [numpy.einsum](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html).
 
 If you get stuck here, you can expand the following dropdown to see a hint and then expand the one after that to see a possible way of doing this.
 

@@ -1157,6 +1157,7 @@ model_basis = nmo.glm.GLM(solver_name="LBFGS")
 model_basis.fit(conv_spk.restrict(first_half), neuron_count.restrict(first_half))
 ```
 
+(head-direction-basis)=
 <div class="render-all">
 
 We can plot the resulting response, noting that the weights we just learned needs to be "expanded" back
