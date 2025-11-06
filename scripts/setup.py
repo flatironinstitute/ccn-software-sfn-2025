@@ -84,7 +84,7 @@ def main():
             tgt_anchor = anchor.replace("-full", "-users").replace("-presenters", "-users")
             src_anchor = "-".join(anchor.split("-")[:-1])
             nb_contents = re.sub(
-                f"({src_anchor}-[a-z]+)", f"../{path}#{tgt_anchor}", nb_contents
+                fr"]\({src_anchor}-[a-z]+\)", f"](../{path}#{tgt_anchor})", nb_contents
             )
         output_f.write_text(nb_contents)
 
