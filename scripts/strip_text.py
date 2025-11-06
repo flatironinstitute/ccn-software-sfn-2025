@@ -4,6 +4,10 @@ import re
 import os
 import pathlib
 
+GROUP_PROJ_NB_EXPLAIN = """
+This notebook has had all its explanatory text removed and has not been run.
+ It is intended to be downloaded and run locally (or on the provided binder),
+ working through the questions with your small group."""
 USER_NB_EXPLAIN = """
 This notebook has had all its explanatory text removed and has not been run.
  It is intended to be downloaded and run locally (or on the provided binder)
@@ -97,7 +101,10 @@ for md in (repo_dir / "docs/source/full").glob("*/*md"):
         else:
             user_text.append(t)
     user_text = "\n".join(user_text)
-    user_text = user_text.replace(title, title + USER_NB_EXPLAIN.format(local_path))
+    if "group_projects" in str(md):
+        user_text = user_text.replace(title, title + GROUP_PROJ_NB_EXPLAIN)
+    else:
+        user_text = user_text.replace(title, title + USER_NB_EXPLAIN.format(local_path))
     user_text = user_text.replace(ipynb, user_ipynb)
     user_text = user_text.replace("no-search: true", "")
     user_text = user_text.replace("orphan: true", "")
