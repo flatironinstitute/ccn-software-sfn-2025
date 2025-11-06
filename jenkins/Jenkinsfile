@@ -28,10 +28,9 @@ pipeline {
               # make sure we have the git tags, since we need them to correctly version output
               git fetch --tags
               source $HOME/.local/bin/env
-              uv add jax[cuda13]
               uv sync
               NEMOS_DATA_DIR=./data/ uv run python src/workshop_utils/fetch.py
-              uv run python -c "import pynapple as nap; print(nap.load_file('data/visual_coding_data.zip.unzip/flashes.npz'))"
+              uv run python -c "import pynapple as nap; flashes=nap.load_file('data/visual_coding_data.zip.unzip/flashes.npz'); print(flashes); print(flashes['color']); print(flashes["color"] == "1.0")"
               uv run python ./scripts/strip_text.py
               uv run make -C docs html O="-T -W"
               
