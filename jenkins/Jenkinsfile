@@ -94,7 +94,7 @@ pipeline {
       }
       post {
         always {
-          archiveArtifacts artifacts: "data/**", fingerprint: true
+          archiveArtifacts artifacts: "docs/**", fingerprint: true
           dir("$HOME") {
             deleteDir()
           }

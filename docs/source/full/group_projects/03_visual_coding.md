@@ -66,6 +66,7 @@ import jax
 import matplotlib.pyplot as plt
 import numpy as np
 import pynapple as nap
+print(nap.__version__)
 
 # configure pynapple to ignore conversion warning
 nap.nap_config.suppress_conversion_warnings = True
@@ -163,6 +164,7 @@ During the flashes presentation trials, mice were exposed to white or black full
 :tags: [render-all]
 
 # create a separate object for black and white flashes
+print(flashes)
 flashes_white = flashes[flashes["color"] == "1.0"]
 flashes_black = flashes[flashes["color"] == "-1.0"]
 ```
