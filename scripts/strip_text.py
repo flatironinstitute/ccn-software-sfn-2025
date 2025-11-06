@@ -50,7 +50,7 @@ for md in (repo_dir / "docs/source/full").glob("*/*md"):
     # - all divs with a render class
     # - all admonitions (in colon fences)
     regex_str = (
-        r"---.*?---|(?:\(.*\)= *\n)?^#.*?$|```{code-cell}.*?```|<div class=.render.*?/div>|:::.*?:::"
+        r"---.*?---|(?:\([a-z_-]+\)= *\n)?^#.*?$|```{code-cell}.*?```|<div class=.render.*?/div>|:::.*?:::"
     )
     preserved_text = re.findall(regex_str, contents, re.MULTILINE | re.DOTALL)
 
