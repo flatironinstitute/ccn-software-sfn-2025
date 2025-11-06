@@ -11,6 +11,12 @@ import subprocess
 import warnings
 import os
 
+warnings.filterwarnings(
+    "ignore",
+    message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
+    category=UserWarning,
+)
+
 repo_dir = pathlib.Path(__file__).parent.parent
 os.environ["NEMOS_DATA_DIR"] = os.environ.get("NEMOS_DATA_DIR", str(repo_dir / "data"))
 
@@ -93,10 +99,7 @@ except ModuleNotFoundError:
     print(f":x: workshop utilities not found. Try running [bold]pip install .[/bold] from the github repo.")
 else:
     missing_files = []
-    with warnings.catch_warnings():
-        # this import may give warning about documentation_utils
-        warnings.simplefilter("ignore")
-        from nemos.fetch.fetch_data import _create_retriever
+    from nemos.fetch.fetch_data import _create_retriever
     retriever = _create_retriever()
     for f in workshop_utils.DOWNLOADABLE_FILES:
         # as far as I could find, retriever doesn't have a "check if file is downloaded"

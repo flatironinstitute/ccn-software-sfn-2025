@@ -53,6 +53,8 @@ def main():
                         f.with_name("tmp.md")])
         os.remove(f.with_name("tmp.md"))
     for f in docs_nb_dir.glob("**/*md"):
+        if "index.md" in f.name:
+            continue
         output_f = (nb_dir / f.parent.name / f.name.replace("md", "ipynb")).absolute()
         output_f.parent.mkdir(exist_ok=True)
         subprocess.run(
