@@ -35,7 +35,7 @@ sphinxemoji_style = 'twemoji'
 
 # max time (in secs) per notebook cell. here, we disable this
 nb_execution_timeout = -1
-nb_execution_raise_on_error = False
+nb_execution_raise_on_error = True
 html_theme = 'sphinx_book_theme'
 html_static_path = ['_static']
 html_css_files = ['custom.css']
