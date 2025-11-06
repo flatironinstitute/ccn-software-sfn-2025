@@ -97,7 +97,7 @@ First we download and load the data into pynapple.
 :tags: [render-all]
 
 data = workshop_utils.fetch_data("visual_coding_data.zip")
-flashes, units = [nap.load_file(d) for d in data]
+flashes, units = [nap.load_file(d) for d in sorted(data)]
 ```
 
 :::{admonition} Full dataset?
@@ -163,9 +163,6 @@ During the flashes presentation trials, mice were exposed to white or black full
 :tags: [render-all]
 
 # create a separate object for black and white flashes
-print(nap)
-print(nap.__version__)
-print(flashes)
 flashes_white = flashes[flashes["color"] == "1.0"]
 flashes_black = flashes[flashes["color"] == "-1.0"]
 ```
