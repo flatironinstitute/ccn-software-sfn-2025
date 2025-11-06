@@ -90,6 +90,13 @@ pipeline {
           }
         }
       }
+      post {
+        always {
+          dir("$HOME") {
+            deleteDir()
+          }
+        }
+      }
     }
   }
   post {
