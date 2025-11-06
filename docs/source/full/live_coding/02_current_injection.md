@@ -338,7 +338,7 @@ ax.set_ylabel("Current (pA)")
 ax.set_xlabel("Time (s)")
 ```
 
-(current-inj-basic)=
+(current-inj-basic-full)=
 ### Basic analyses
 
 Before using the Generalized Linear Model, or any model, it's worth taking
@@ -520,7 +520,7 @@ explain:
 
 ## NeMoS 
 
-(current-inj-prep)=
+(current-inj-prep-full)=
 ### Preparing data
 
 Now that we understand our data, we're almost ready to put the model together.
@@ -617,7 +617,7 @@ make your life easier by e.g., allowing you to parallelize more easily.
 
 :::
 
-(current-inj-glm)=
+(current-inj-glm-full)=
 ### Fitting the model
 
 Now we're ready to fit our model!
@@ -811,7 +811,7 @@ Viewing this plot also makes it clear that the model's tuning curve is
 approximately exponential. We already knew that! That's what it means to be a
 LNP model of a single input. But it's nice to see it made explicit.
 
-(current-inj-basis)=
+(current-inj-basis-full)=
 ### Extending the model to use injection history
 
 We can try extending the model in order to improve its performance. There are many
@@ -1030,9 +1030,9 @@ this model learns a filter, which gets convolved with the input before having
 the intercept added and being exponentiated to give us the predicted firing
 rate.
 
-(visualize-filter)=
 <div class="render-user render-presenter">
 
+(visualize-filter-full)=
 - Visualize the current history model's learned filter.
 - This filter is convolved with the input current and used to predict the firing
   rate.
@@ -1142,9 +1142,9 @@ investigate whether that's the case, one should split the dataset into test and
 train sets, training the model on one subset of the data and testing it on
 another to test the model's generalizability. We'll see a version of this
 using `scikit-learn`'s pipelining and cross-validation machinery, will be shown
-in the [NeMoS Advanced notebook](sklearn-nb).
+in the [NeMoS Advanced notebook](sklearn-nb-full).
 
-(current-inj-score)=
+(current-inj-score-full)=
 ### Finishing up
 
 Note that, because the log-likelihood is un-normalized, it should not be compared
@@ -1210,7 +1210,7 @@ We could try adding the following inputs to the model, alone or together:
   current and the firing rate. Can we improve that somehow? We saw that adding
   the current history changed this relationship, but we can also change it
   without including the history by using an `Eval` basis object. We'll see how
-  to do this in more detail in the [final notebook](sklearn-basis)
+  to do this in more detail in the [final notebook](sklearn-basis-full)
 
 <div class="render-all">
 

@@ -84,6 +84,8 @@ Users version preserves:
 We build all of the notebooks as a sphinx site, which we can browse. `index.md` is the main way in which participants will view the information present in this repo. They are instructed to clone this repo and run `scripts/setup.py`, which will download all the data, run `scripts/strip_text.py`, and convert the resulting user notebooks to `ipynb` files, placing them in the `notebooks/` directory. This is what users will see on their screen as they work on their notebook.
 
 This means that you should check what these notebooks look like to make sure everything renders correctly. In particular, intersphinx **does not** work here (though it does work on the built website). Thus, you should instead use explicit links to the relevant documentation, where necessary. 
+
+For internal cross-references (i.e., those that refer to other notebooks in this site), you can use myst cross-references as normal. When writing anchors for these references, they should end with `-full`, (i.e., `(fit-glm-full)=`). When *referencing* these anchors, that final tag should correspond to which version you want to link to (`-users`, `-presenters` or `-full`; we replace `-full` with the appropriate tag in `strip_text.py`). We will also make sure these point correctly in the user notebooks.
     
 ## binder
 

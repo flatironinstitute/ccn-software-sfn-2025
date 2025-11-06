@@ -45,12 +45,12 @@ for md in (repo_dir / "docs/source/full").glob("*/*md"):
 
     # this matches the following (split by |, regex's or):
     # - the document metadata header
-    # - all markdown headers (e.g., # TITLE)
+    # - all markdown headers (e.g., # TITLE), with optional preceding anchor (e.g., (anchor)=)
     # - all code cells
     # - all divs with a render class
     # - all admonitions (in colon fences)
     regex_str = (
-        "---.*?---|^#.*?$|```{code-cell}.*?```|<div class=.render.*?/div>|:::.*?:::"
+        r"---.*?---|(?:\(.*\)= *\n)?^#.*?$|```{code-cell}.*?```|<div class=.render.*?/div>|:::.*?:::"
     )
     preserved_text = re.findall(regex_str, contents, re.MULTILINE | re.DOTALL)
 
@@ -76,6 +76,7 @@ for md in (repo_dir / "docs/source/full").glob("*/*md"):
     presenter_text = presenter_text.replace(
         title, title + PRESENTER_NB_EXPLAIN.format(local_path)
     )
+    presenter_text = presenter_text.replace("-full)=", "-presenters)=")
     presenter_text = presenter_text.replace(ipynb, presenter_ipynb)
     presenter_md.write_text(presenter_text)
 
@@ -106,6 +107,7 @@ for md in (repo_dir / "docs/source/full").glob("*/*md"):
     else:
         user_text = user_text.replace(title, title + USER_NB_EXPLAIN.format(local_path))
     user_text = user_text.replace(ipynb, user_ipynb)
+    user_text = user_text.replace("-full)=", "-users)=")
     user_text = user_text.replace("no-search: true", "")
     user_text = user_text.replace("orphan: true", "")
     user_md.write_text(user_text)

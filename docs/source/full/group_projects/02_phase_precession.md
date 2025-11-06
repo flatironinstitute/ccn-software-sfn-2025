@@ -1087,10 +1087,8 @@ We can see a number of units that display a negative relationship between positi
 
 Next we'll do a popular analysis in the rat hippocampus sphere: Bayesian decoding. This analysis is an elegent application of Bayes' rule in predicting the animal's location (or other behavioral variables) given neural activity at some point in time. Refer to the dropdown box below for a more in-depth explanation.
 
-</div>
-
 :::{admonition} Background: Bayesian decoding
-:class: render-all dropdown
+:class: dropdown
 Recall Bayes' rule, written here in terms of our relevant variables:
 
 $$P(position|spikes) = \frac{P(position)P(spikes|position)}{P(spikes)}$$
@@ -1128,9 +1126,9 @@ Another way of putting it is $P(spikes)$ is the normalization factor such that $
 If this method looks daunting, we have some good news: pynapple has it implemented already in the function `nap.decode_bayes`. All we'll need are the spikes, the tuning curves, and the width of the time window $\tau$.
 :::
 
+(phase-precess-cv-full)=
 :::{admonition} Aside: Cross-validation
-:class: tip render-all
-:name: phase-precess-cv
+:class: tip 
     
 Generally this method is cross-validated, which means you train the model on one set of data and test the model on a different, held-out data set. For Bayesian decoding, the "model" refers to the model *likelihood*, which is computed from the tuning curves. 
 
@@ -1138,6 +1136,8 @@ If we want to decode an example run down the track, our training set should omit
 
 The code cell below will do these steps for you.
 :::
+
+</div>
 
 ```{code-cell} ipython3
 :tags: [render-all]
@@ -1436,7 +1436,7 @@ The goal of this project is to fit a PopulationGLM including both position and s
 
 </div>
 
-(basis_eval_place_cells)=
+(basis-eval-place-cells-full)=
 ### Basis evaluation
 
 <div class="all">

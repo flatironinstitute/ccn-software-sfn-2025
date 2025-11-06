@@ -50,7 +50,7 @@ This notebook can be downloaded as **{nb-download}`03_nemos_advanced.ipynb`**. S
 
 :::
 
-(sklearn-nb)=
+(sklearn-nb-full)=
 # NeMoS Advanced: Cross-Validation and Model Selection
 
 
@@ -297,10 +297,10 @@ print("Are the design matrices equivalent?", np.all(X.d == X_numpy.d))
 
 ## Scikit-learn
 
-(sklearn-cv)=
+(sklearn-cv-full)=
 ### How to know when to regularize?
 
-In the [head direction](head-direction-fit) project, we fit the all-to-all connectivity of the head-tuning dataset using the Ridge regularizer, and we learned that regularization can combat overfitting. What we didn't show is how to choose a proper regularizer. Generally, too much regularization leads to underfitting, i.e. the model is too simple and doesn't capture the neural variability well. To little regularization may overfit, especially when we have a large number of parameters, i.e. out model will capture both signal and noise. This is what we saw in the head direction notebook when we used the raw spike history as predictor. 
+In the [head direction](head-direction-fit-full) project, we fit the all-to-all connectivity of the head-tuning dataset using the Ridge regularizer, and we learned that regularization can combat overfitting. What we didn't show is how to choose a proper regularizer. Generally, too much regularization leads to underfitting, i.e. the model is too simple and doesn't capture the neural variability well. To little regularization may overfit, especially when we have a large number of parameters, i.e. out model will capture both signal and noise. This is what we saw in the head direction notebook when we used the raw spike history as predictor. 
 
 What we are looking for is a regularization strength that balances out the bias towards simpler models with the variance necessary to explain the data. However, how do we know how much we should regularize? One thing we can do is use cross-validation to see whether model performance on unseen data improves with regularization (behind the scenes, this is what we did!). We'll walk through how to do that now.
 
@@ -394,7 +394,7 @@ pd.DataFrame(cv.cv_results_)
 The most informative for us is the `'mean_test_score'` key, which shows the average of `glm.score` on each test-fold. Thus, higher is better, and we can see that the UnRegularized model performs better.
 
 
-(sklearn-basis)=
+(sklearn-basis-full)=
 ### Select basis
 
 We can do something similar to select the basis. In the above example, I just told you which basis function to use and how many of each. But, in general, you want to select those in a reasonable manner. Cross-validation to the rescue!
@@ -762,7 +762,7 @@ We then visualize the predictions of `best_estim` the same as before.
 visualize_model_predictions(best_estim, transformer_input)
 ```
 
-(sklearn-feature-selection)=
+(sklearn-feature-selection-full)=
 ## Feature selection
 
 Now that we understand how scikit-learn works with NeMoS, we can determine whether both position and speed are necessary inputs by performing feature selection. 
