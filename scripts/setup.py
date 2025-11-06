@@ -45,7 +45,12 @@ def main():
     for f in docs_nb_dir_gp.glob("*md"):
         if "index.md" in f.name:
             continue
-        subprocess.run(["jupytext", "--execute", f.absolute(), "-o", f.with_name("tmp.md")])
+        # have jupytext write output to a tmp file that we then delete. if --output is
+        # not specified, will write to original file which, for some reason, removes the
+        # `no-search: true` in the front matter. if the tmp file is not in the same
+        # directory as the actual file, relative paths don't work.
+        subprocess.run(["jupytext", "--execute", f.absolute(), "--output",
+                        f.with_name("tmp.md")])
         os.remove(f.with_name("tmp.md"))
     for f in docs_nb_dir.glob("**/*md"):
         output_f = (nb_dir / f.parent.name / f.name.replace("md", "ipynb")).absolute()
