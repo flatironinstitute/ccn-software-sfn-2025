@@ -43,9 +43,16 @@ def main():
     print("Preparing notebooks, this may take ~5 minutes...")
     shutil.rmtree(docs_nb_dir / "live_coding", ignore_errors=True)
     shutil.rmtree(docs_nb_dir / "group_projects", ignore_errors=True)
-    shutil.rmtree(repo_dir / "docs" / "source" / "_static" / "_check_figs", ignore_errors=True)
-    shutil.rmtree(repo_dir / "docs" / "source" / "presenters" / "live_coding", ignore_errors=True)
-    shutil.rmtree(repo_dir / "docs" / "source" / "presenters" / "group_projects", ignore_errors=True)
+    shutil.rmtree(
+        repo_dir / "docs" / "source" / "_static" / "_check_figs", ignore_errors=True
+    )
+    shutil.rmtree(
+        repo_dir / "docs" / "source" / "presenters" / "live_coding", ignore_errors=True
+    )
+    shutil.rmtree(
+        repo_dir / "docs" / "source" / "presenters" / "group_projects",
+        ignore_errors=True,
+    )
     subprocess.run(["python", repo_dir / "scripts" / "strip_text.py"], cwd=repo_dir)
 
     for f in docs_nb_dir_gp.glob("*md"):
@@ -55,9 +62,11 @@ def main():
         # not specified, will write to original file which, for some reason, removes the
         # `no-search: true` in the front matter. if the tmp file is not in the same
         # directory as the actual file, relative paths don't work.
-        subprocess.run(["jupytext", "--execute", f.absolute(), "--output",
-                        f.with_name("tmp.md")])
-        os.remove(f.with_name("tmp.md"))
+        subprocess.run(
+            ["jupytext", "--execute", f.absolute(), "--output", f.with_name("tmp.md")]
+        )
+    # move outside the loop to avoid potential race conditions with next subprocess
+    os.remove(f.with_name("tmp.md"))
 
     # find the file that each anchor lives in, so that we can update them for notebooks
     # below
@@ -81,10 +90,12 @@ def main():
         # update xref anchors from the version that myst wants to one that jupyterlab will
         # recognize (which requires including the file path explicitly)
         for anchor, path in anchors.items():
-            tgt_anchor = anchor.replace("-full", "-users").replace("-presenters", "-users")
+            tgt_anchor = anchor.replace("-full", "-users").replace(
+                "-presenters", "-users"
+            )
             src_anchor = "-".join(anchor.split("-")[:-1])
             nb_contents = re.sub(
-                fr"]\({src_anchor}-[a-z]+\)", f"](../{path}#{tgt_anchor})", nb_contents
+                rf"]\({src_anchor}-[a-z]+\)", f"](../{path}#{tgt_anchor})", nb_contents
             )
         output_f.write_text(nb_contents)
 
