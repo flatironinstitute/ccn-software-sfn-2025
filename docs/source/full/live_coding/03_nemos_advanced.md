@@ -823,7 +823,7 @@ basis_speed.label = "speed only"
 # combine them to define each model
 basis_all = (position_basis + speed_basis).to_transformer()
 basis_position = (position_basis + null_basis).to_transformer()
-basis_speed = (null_basis + speed_basis).tp_transformer()
+basis_speed = (null_basis + speed_basis).to_transformer()
 
 # assign labels (optional but helpful for readability)
 basis_all.label = "position + speed"
