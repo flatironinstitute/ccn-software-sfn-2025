@@ -624,7 +624,7 @@ def plot_position_speed_tuning(
     model_position_tuning: Optional[xarray.DataArray] = None,
     model_speed_tuning: Optional[xarray.DataArray] = None,
 ):
-    fig = plt.figure(figsize=(6 * position_tuning.shape[0], 3), tight_layout=True)
+    fig = plt.figure(figsize=(6 * position_tuning.shape[0], 3))
     gs = plt.GridSpec(1, 2 * position_tuning.shape[0], wspace=0.3, hspace=0.35)
     pos_ax = None
     speed_ax = None
