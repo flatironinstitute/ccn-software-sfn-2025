@@ -299,7 +299,7 @@ During the first day, we will demonstrate [pynaviz](https://pynapple-org.github.
 - If you see an error that mentions SSL verification and are using `conda`, add the following line to your `~/.condarc`: `ssl_verify: false`. Then restart your terminal and run the command again. (If you are using `uv`, I'm not sure how to set this configuration option.)
 - On an ARM-based (newer) Mac using `conda`, during `check_setup.py`, if you get `This version of jaxlib was built using AVX instructions,` uninstall using pip and install using conda: `pip uninstall jax jaxlib`; `conda install -c conda-forge jax jaxlib`.
     - If not using `conda`, not sure how to avoid this issue, you may have to switch.
-- If you see a `ModuleNotFoundError: No module named '_sqlite3'` or `ModuleNotFoundError: No module named pysqlite2`, [this is likely a sign that your python installation was not properly built](https://github.com/jupyterhub/jupyterhub/issues/1594). Reinstalling the python interpreter may help. How to do this depends on whether you are using uv or conda; come to the installation help session for assistance.
+- If you see a `ModuleNotFoundError: No module named '_sqlite3'` or `ModuleNotFoundError: No module named pysqlite2` when running `scripts/setup.py` or `jupyter lab`, [this is likely a sign that your python installation was not properly built](https://github.com/jupyterhub/jupyterhub/issues/1594). Reinstalling the python interpreter may help. How to do this depends on whether you are using uv or conda; come to the installation help session for assistance.
 
 ## Binder
 
