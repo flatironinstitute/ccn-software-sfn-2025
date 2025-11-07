@@ -267,6 +267,7 @@ During the first day, we will demonstrate [pynaviz](https://pynapple-org.github.
 
   (On Windows, replace `$(realpath ..)` with the path to the `ccn-software-sfn-2025` directory.)
 - We have noticed jupyter notebooks behaving a bit odd in Safari --- if you are running/editing jupyter in Safari and the behavior seems off (scrolling not smooth, lag between creation and display of cells), try a different browser. We've had better luck with Firefox or using the arrow keys to navigate between cells.
+- On **Windows + uv**: When running the setup script, if you run into an error like: `ImportError: DLL load failed while importing _jax: The specified module could not be found`, it is possible that `uv` is not solving the environment correctly with currently installed drivers. Try going through the installation with `miniforge` and `conda` instead.
 - On **Windows + conda**: if after installing conda the path are not correctly set, you may encounter this error message: 
    ```
    conda : The term 'conda' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
@@ -299,6 +300,7 @@ During the first day, we will demonstrate [pynaviz](https://pynapple-org.github.
 - If you see an error that mentions SSL verification and are using `conda`, add the following line to your `~/.condarc`: `ssl_verify: false`. Then restart your terminal and run the command again. (If you are using `uv`, I'm not sure how to set this configuration option.)
 - On an ARM-based (newer) Mac using `conda`, during `check_setup.py`, if you get `This version of jaxlib was built using AVX instructions,` uninstall using pip and install using conda: `pip uninstall jax jaxlib`; `conda install -c conda-forge jax jaxlib`.
     - If not using `conda`, not sure how to avoid this issue, you may have to switch.
+
 
 ## Binder
 
