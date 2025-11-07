@@ -1,4 +1,4 @@
-(jupyter)=
+(jupyter-lab)=
 # Intro to Jupyter Lab
 
 If you are unfamiliar with jupyter lab, please come to our "Intro to Jupyter Lab" session in the Omni San Diego Hotel, Gallery 1, at 4:30pm on Wednesday, November 12.
