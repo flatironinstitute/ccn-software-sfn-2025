@@ -21,22 +21,12 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_togglebutton',
     'sphinx_design',
-    'sphinx.ext.intersphinx'
 ]
-
-# https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
-intersphinx_mapping = {
-    'nemos': ("https://nemos.readthedocs.io/en/latest/", None),
-    'pynapple': ("https://pynapple.org", None),
-    'numpy': ("https://numpy.org/doc/stable", None),
-}
 
 templates_path = []
 exclude_patterns = []
 
 nitpicky = True
-# raise an error if exec error in notebooks
-nb_execution_raise_on_error = True
 
 sphinxemoji_style = 'twemoji'
 
@@ -45,9 +35,6 @@ sphinxemoji_style = 'twemoji'
 
 # max time (in secs) per notebook cell. here, we disable this
 nb_execution_timeout = -1
-# we have two versions of each notebook, one with explanatory text and one without
-# (which ends in `-stripped.md`). we don't need to run both of them
-nb_execution_excludepatterns = ['*stripped*']
 nb_execution_raise_on_error = True
 html_theme = 'sphinx_book_theme'
 html_static_path = ['_static']

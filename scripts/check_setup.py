@@ -11,6 +11,12 @@ import subprocess
 import warnings
 import os
 
+warnings.filterwarnings(
+    "ignore",
+    message="plotting functions contained within `_documentation_utils` are intended for nemos's documentation.",
+    category=UserWarning,
+)
+
 repo_dir = pathlib.Path(__file__).parent.parent
 os.environ["NEMOS_DATA_DIR"] = os.environ.get("NEMOS_DATA_DIR", str(repo_dir / "data"))
 
@@ -93,10 +99,7 @@ except ModuleNotFoundError:
     print(f":x: workshop utilities not found. Try running [bold]pip install .[/bold] from the github repo.")
 else:
     missing_files = []
-    with warnings.catch_warnings():
-        # this import may give warning about documentation_utils
-        warnings.simplefilter("ignore")
-        from nemos.fetch.fetch_data import _create_retriever
+    from nemos.fetch.fetch_data import _create_retriever
     retriever = _create_retriever()
     for f in workshop_utils.DOWNLOADABLE_FILES:
         # as far as I could find, retriever doesn't have a "check if file is downloaded"
@@ -113,14 +116,14 @@ else:
 
 if errors == 0:
     print("\n:tada::tada: Congratulations, setup successful!")
-    print("\nPlease run `jupyter lab notebooks/day2/current_injection-users.ipynb`, ")
+    print("\nPlease run `jupyter lab notebooks/live_coding/02_current_injection-users.ipynb`, ")
     print("and ensure that you can run the first few cells (up until the cell containing ")
     print("`path = workshop_utils.fetch_data(\"allen_478498617.nwb\")`).")
 else:
     print(f"\n:worried: [red bold]{errors} Errors found.[/red bold]\n")
     print("Unfortunately, your setup was unsuccessful.")
     print("Try to resolve following the suggestions above.")
-    print("If you encountered many installation errors, run [bold] pip install .[/bold] (note the dot!)")
+    print("If you encountered many installation errors and are *not* using uv, run [bold] pip install -e .[/bold] (note the dot!)")
     print("If you are unable to fix your setup yourself, please come to the setup help")
     print("at the Omni San Diego Hotel, Gallery 1, from noon to 6pm on Wednesdsay, November 12 ")
     print("and show us the output of this command.")
