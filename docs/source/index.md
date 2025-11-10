@@ -267,6 +267,7 @@ During the first day, we will demonstrate [pynaviz](https://pynapple-org.github.
 
   (On Windows, replace `$(realpath ..)` with the path to the `ccn-software-sfn-2025` directory.)
 - We have noticed jupyter notebooks behaving a bit odd in Safari --- if you are running/editing jupyter in Safari and the behavior seems off (scrolling not smooth, lag between creation and display of cells), try a different browser. We've had better luck with Firefox or using the arrow keys to navigate between cells.
+- On **Windows + uv**: When running the setup script, if you run into an error like: `ImportError: DLL load failed while importing _jax: The specified module could not be found`, it is possible that there is an issue with how `uv` is solving the environment. Try going through the installation with `miniforge` and `conda` instead.
 - On **Windows + conda**: if after installing conda the path are not correctly set, you may encounter this error message: 
    ```
    conda : The term 'conda' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
@@ -300,6 +301,7 @@ During the first day, we will demonstrate [pynaviz](https://pynapple-org.github.
 - On an ARM-based (newer) Mac using `conda`, during `check_setup.py`, if you get `This version of jaxlib was built using AVX instructions,` uninstall using pip and install using conda: `pip uninstall jax jaxlib`; `conda install -c conda-forge jax jaxlib`.
     - If not using `conda`, not sure how to avoid this issue, you may have to switch.
 - If you see a `ModuleNotFoundError: No module named '_sqlite3'` or `ModuleNotFoundError: No module named pysqlite2` when running `scripts/setup.py` or `jupyter lab`, [this is likely a sign that your python installation was not properly built](https://github.com/jupyterhub/jupyterhub/issues/1594). Reinstalling the python interpreter may help. How to do this depends on whether you are using uv or conda; come to the installation help session for assistance.
+
 
 ## Binder
 
