@@ -15,7 +15,6 @@ __all__ = [
     "plot_features",
     "animate_1d_convolution",
     "plot_head_direction_tuning_model",
-    "plot_feature_mask",
     "plot_heatmap_cv_results",
     "plot_position_speed",
     "plot_position_speed_tuning",
@@ -454,40 +453,6 @@ def plot_head_direction_tuning_model(
             ax.set_xticks([])
             ax.set_yticks([])
     plt.tight_layout()
-    return fig
-
-
-def plot_feature_mask(masks, titles=None):
-    height = 5
-    if not isinstance(masks, list):
-        masks = [masks]
-    if titles is None:
-        titles = [f"Mask {i}" for i in range(len(masks))]
-    width = 5 * masks[0].shape[1] / masks[0].shape[0]
-    fig, axes = plt.subplots(
-        1,
-        1 + len(masks),
-        sharey=True,
-        figsize=((width + 0.5) * (0.5 + len(masks)), height),
-    )
-    cmap = "RdBu"
-    for i, (ax, m, t) in enumerate(zip(axes, masks, titles)):
-        if i == 0:
-            ax.set_ylabel("feature")
-        if i == (len(axes) - 1) // 2:
-            ax.set_xlabel("neuron")
-        ax.imshow(m, vmin=-1, vmax=1, cmap=cmap)
-        if m.shape[1] < 5:
-            ax.set(xticks=range(m.shape[1]))
-        ax.set_title(t)
-    norm = plt.Normalize(vmin=-1, vmax=1)
-    cmap = plt.get_cmap(cmap)
-    handles = [
-        plt.Rectangle((0, 0), 0, 1, color=cmap(norm(1)), label=1),
-        plt.Rectangle((0, 0), 0, 0, color=cmap(norm(0)), label=0),
-    ]
-    fig.legend(handles=handles, loc=5)
-    axes[-1].set_visible(False)
     return fig
 
 
