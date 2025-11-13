@@ -114,6 +114,16 @@ else:
         print(":white_check_mark: All data files found!")
 
 
+figure_checks = set([f"01-{i:02d}.png" for i in range(15)] + [f"02-{i:02d}.png" for i in range(1, 17)])
+figure_check_dir = pathlib.Path(__file__).parent.parent / "docs" / "source" / "_static" / "_check_figs"
+found_figs = set([f.name for f in figure_check_dir.glob("*png")])
+if figure_checks - found_figs:
+   errors += 1
+   print(":x: Some check figures missing. Did you run [bold]python scripts/setup.py[/bold]?")
+else:
+    print(":white_check_mark: All check figures found!")
+
+
 if errors == 0:
     print("\n:tada::tada: Congratulations, setup successful!")
     print("\nPlease run `jupyter lab notebooks/live_coding/02_current_injection-users.ipynb`, ")
