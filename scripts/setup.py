@@ -56,7 +56,7 @@ def main():
     subprocess.run(["python", repo_dir / "scripts" / "strip_text.py"], cwd=repo_dir)
 
     for f in docs_nb_dir_gp.glob("*md"):
-        if "index.md" in f.name:
+        if "index.md" in f.name or "03_visual_coding" in f.name:
             continue
         # have jupytext write output to a tmp file that we then delete. if --output is
         # not specified, will write to original file which, for some reason, removes the
