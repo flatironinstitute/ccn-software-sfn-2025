@@ -72,7 +72,7 @@ def main():
     # below
     anchors = {}
     for f in docs_nb_dir.glob("**/*md"):
-        name = os.path.join(f.parent.name, f.name).replace(".md", ".ipynb")
+        name = f'{f.parent.name}/{f.name.replace(".md", ".ipynb")}'
         for anchor in extract_anchors(f.read_text()):
             anchors[anchor] = name
 
